@@ -192,13 +192,13 @@ export default function TVShows() {
               {isOpenP && (
                 <div className="absolute right-0 font-bold w-48 bg-black text-white border-t-3 border-gray-200 divide-y divide-gray-100 shadow-2xl ring-1 ring-black ring-opacity-5">
                   <div className="py-1">
-                    <Link href="/Account" className="block px-4 py-2 text-sm text-white hover:bg-gray-100">
+                    <Link href="/Account" className="block px-4 py-2 text-sm text-white hover:bg-gray-100 hover:text-black">
                       Manage Account
                     </Link>
-                    <Link href="/SignIn" className="block px-4 py-2 text-sm text-white hover:bg-gray-100">
+                    <Link href="/SignIn" className="block px-4 py-2 text-sm text-white hover:bg-gray-100 hover:text-black">
                       Sign Out
                     </Link>
-                    <Link href="#" className="block px-4 py-2 text-sm text-white hover:bg-gray-100">
+                    <Link href="#" className="block px-4 py-2 text-sm text-white hover:bg-gray-100 hover:text-black">
                       Help Center
                     </Link>
                   </div>
