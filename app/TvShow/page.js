@@ -7,18 +7,18 @@ import Carousel from "../components/Carousel";
 import { supabase } from "../lib/supabase";
 import { useRouter } from "next/navigation";
 
-export default function Homepage() {
+export default function TVShows() {
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenP, setIsOpenP] = useState(false);
-  const [movies, setMovies] = useState([]);
-  const [kDramas, setKDramas] = useState([]);
   const [series, setSeries] = useState([]);
-  const [featuredMovie, setFeaturedMovie] = useState(null);
+  const [kSeries, setKSeries] = useState([]);
+  const [trendingSeries, setTrendingSeries] = useState([]);
+  const [featuredSeries, setFeaturedSeries] = useState(null);
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [searchResults, setSearchResults] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
 
   const handleSearch = async (e) => {
     e.preventDefault();
@@ -27,10 +27,12 @@ export default function Homepage() {
         const res = await fetch(`/api/search?query=${encodeURIComponent(searchQuery)}`);
         if (!res.ok) throw new Error('Search API error');
         const data = await res.json();
+        console.log("Search results:", data); // Debug
         setSearchResults(data);
         setIsSearchOpen(false);
         setSearchQuery('');
-      } catch {
+      } catch (error) {
+        console.error("Search error:", error);
         setSearchResults([]);
       }
     }
@@ -48,34 +50,31 @@ export default function Homepage() {
       try {
         const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
 
-        // Fetch popular movies
-        const movieResponse = await fetch(
-          `https://api.themoviedb.org/3/movie/popular?api_key=${apiKey}&language=en-US&page=1`
-        );
-        if (!movieResponse.ok) throw new Error(`Movie fetch failed: ${movieResponse.status}`);
-        const movieData = await movieResponse.json();
-        console.log("Movie data:", movieData); // Debug
-        if (movieData.results?.length) {
-          setMovies(movieData.results);
-          const validMovies = movieData.results.filter(movie => movie.backdrop_path);
-          setFeaturedMovie(validMovies[Math.floor(Math.random() * validMovies.length)] || movieData.results[0]);
-        }
-
-        // Fetch K-Dramas
-        const kDramaResponse = await fetch(
-          `https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&with_original_language=ko&with_genres=18&sort_by=popularity.desc&page=1`
-        );
-        if (!kDramaResponse.ok) throw new Error(`K-Drama fetch failed: ${kDramaResponse.status}`);
-        const kDramaData = await kDramaResponse.json();
-        setKDramas(kDramaData.results);
-
-        // Fetch trending series
+        // Fetch English series
         const seriesResponse = await fetch(
-          `https://api.themoviedb.org/3/trending/tv/day?api_key=${apiKey}&language=en-US`
+          `https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&with_original_language=en&sort_by=popularity.desc&page=1`
         );
         if (!seriesResponse.ok) throw new Error("Series fetch failed");
         const seriesData = await seriesResponse.json();
         setSeries(seriesData.results);
+        const validSeries = seriesData.results.filter(item => item.backdrop_path);
+        setFeaturedSeries(validSeries[Math.floor(Math.random() * validSeries.length)] || seriesData.results[0]);
+
+        // Fetch K-Series
+        const kSeriesResponse = await fetch(
+          `https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&with_original_language=ko&sort_by=popularity.desc&page=1`
+        );
+        if (!kSeriesResponse.ok) throw new Error(`K-Series fetch failed: ${kSeriesResponse.status}`);
+        const kSeriesData = await kSeriesResponse.json();
+        setKSeries(kSeriesData.results);
+
+        // Fetch trending series
+        const trendingSeriesResponse = await fetch(
+          `https://api.themoviedb.org/3/trending/tv/day?api_key=${apiKey}&language=en-US`
+        );
+        if (!trendingSeriesResponse.ok) throw new Error("Trending Series fetch failed");
+        const trendingSeriesData = await trendingSeriesResponse.json();
+        setTrendingSeries(trendingSeriesData.results);
 
         setLoading(false);
       } catch (error) {
@@ -94,7 +93,7 @@ export default function Homepage() {
     slidesToScroll: 1,
     autoplay: false,
     arrows: true,
-    nextArrow: <div className="slick-arrow slick-next ">→</div>,
+    nextArrow: <div className="slick-arrow slick-next">→</div>,
     prevArrow: <div className="slick-arrow slick-prev">←</div>,
     responsive: [
       { breakpoint: 1024, settings: { slidesToShow: 3 } },
@@ -108,23 +107,23 @@ export default function Homepage() {
       <div
         className="moviePoster w-full h-80 bg-cover bg-center lg:h-100"
         style={{
-          backgroundImage: featuredMovie?.backdrop_path
-            ? `url(https://image.tmdb.org/t/p/original${featuredMovie.backdrop_path})`
-            : "url(/wall11.png)"
+          backgroundImage: featuredSeries
+            ? `url(https://image.tmdb.org/t/p/original${featuredSeries.backdrop_path})`
+            : "url('./wall11.png')"
         }}
       >
         <div className="flex">
           <img src="./N.png" className="absolute w-5 top-30 ml-4 lg:w-10 lg:top-45" alt="N Icon" />
-          <p className="absolute top-30 ml-10 font-bold lg:ml-15 lg:text-xl lg:top-47">Movie</p>
-          {featuredMovie && (
-            <h1 className="absolute w-60 h-40 top-35 ml-4 text-white text-4xl font-bold md:w-70 lg:top-55 lg:text-5xl lg:w-100 lg:ml-10">
-              {featuredMovie.title}
+          <p className="absolute top-30 ml-10 font-bold lg:ml-15 lg:text-xl lg:top-47">Series</p>
+          {featuredSeries && (
+            <h1 className="absolute w-60 h-40 top-35 ml-4 text-white text-4xl font-bold md:w-70 lg:top-55 lg:text-5xl lg:w-100 lg:ml-15">
+              {featuredSeries.name}
             </h1>
           )}
           <button className="absolute top-70 left-85 bg-white text-black p-1 px-2 rounded-lg font-bold md:left-170 md:hover:cursor-pointer lg:px-4 lg:p-2 lg:text-xl lg:top-85 lg:left-280">
             ▶ Play
           </button>
-          <p className="absolute top-70 text-white p-2 font-bold md:pl-5 md:text-lg lg:text-xl lg:top-85">Only on Netflix</p>
+          <p className="absolute top-70 text-white p-2 font-bold md:pl-5 md:text-lg lg:text-xl lg:top-90">Only on Netflix</p>
         </div>
         <nav className="flex justify-between items-center p-1">
           <div className="flex flex-col justify-center items-center">
@@ -136,7 +135,7 @@ export default function Homepage() {
             <div className="absolute top-6 left-25 text-left md:top-10 md:left-60">
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex px-2 py-2 text-sm font-bold text-white rounded-md md:hover:cursor-pointer md:text-xl "
+                className="flex px-2 py-2 text-sm font-bold text-white rounded-md md:hover:cursor-pointer md:text-xl"
               >
                 Browse
                 <img className="w-6 h-6" src="./ddarrow.png" alt="Dropdown Arrow" />
@@ -144,15 +143,15 @@ export default function Homepage() {
               {isOpen && (
                 <div className="absolute right-0 left-1 font-bold w-48 bg-black text-white border-t-3 border-gray-200 divide-y divide-gray-100 shadow-2xl ring-1 ring-black ring-opacity-5">
                   <div className="py-1">
-               <Link href="/movies" className="block px-4 py-2 text-sm md:hover:bg-gray-100 md:hover:text-black">
-  Movies
-</Link>
-<Link href="/TvShow" className="block px-4 py-2 text-sm md:hover:bg-gray-100 md:hover:text-black">
-  Tv-Series
-</Link>
-<Link href="/my-list" className="block px-4 py-2 text-sm md:hover:bg-gray-100 md:hover:text-black">
-  My List
-</Link>
+                    <Link href="/Homepage" className="block px-4 py-2 text-sm md:hover:bg-gray-100 md:hover:text-black">
+                      Movies
+                    </Link>
+                    <Link href="/TvShow" className="block px-4 py-2 text-sm md:hover:bg-gray-100 md:hover:text-black">
+                      Tv-Series
+                    </Link>
+                    <Link href="/my-list" className="block px-4 py-2 text-sm md:hover:bg-gray-100 md:hover:text-black">
+                      My List
+                    </Link>
                   </div>
                 </div>
               )}
@@ -211,11 +210,11 @@ export default function Homepage() {
       </div>
       {searchResults.length > 0 ? (
         <div className="carousel-container">
-          <div className="flex justify-between items-center ">
-            <h3 className="text-white font-bold pl-2 mt-4 lg:pl-4">Search Results</h3>
+          <div className="flex justify-between items-center">
+            <h3 className="text-white font-bold pl-2 mt-4">Search Results</h3>
             <button
               onClick={() => setSearchResults([])}
-              className="text-white pr-2 text-sm lg:text-xl lg:pr-10"
+              className="text-white pr-2 text-sm"
             >
               Clear
             </button>
@@ -225,16 +224,16 @@ export default function Homepage() {
       ) : (
         <>
           <div className="carousel-container">
-            <h3 className="text-white font-bold pl-2 mt-4">Movies</h3>
-            <Carousel items={movies} loading={loading} settings={settings} />
+            <h3 className="text-white font-bold pl-2 mt-4">Series</h3>
+            <Carousel items={series} loading={loading} settings={settings} />
           </div>
           <div className="carousel-container">
-            <h3 className="text-white font-bold pl-2 mt-4">K-Dramas</h3>
-            <Carousel items={kDramas} loading={loading} settings={settings} />
+            <h3 className="text-white font-bold pl-2 mt-4">K-Series</h3>
+            <Carousel items={kSeries} loading={loading} settings={settings} />
           </div>
           <div className="carousel-container">
             <h3 className="text-white font-bold pl-2 mt-4">Trending Series</h3>
-            <Carousel items={series} loading={loading} settings={settings} />
+            <Carousel items={trendingSeries} loading={loading} settings={settings} />
           </div>
         </>
       )}

@@ -28,7 +28,7 @@ body {
 
 .mobileBorder
 {
-  background: linear-gradient(to left, rgb(69, 112, 185), rgb(25, 90, 204));
+  background: linear-gradient(to left, rgb(69, 112, 185), rgb(9, 62, 155));
   color: white;
 }
 .mobileBorderP {
@@ -52,4 +52,22 @@ body {
   font-size: 1.5rem;
   color: white;
   margin-bottom: 0.5rem;
+}
+
+.Main
+{
+  background-color: #f5f5f5;
+}
+
+.MemberC
+{
+  background: linear-gradient(to right, rgb(38, 9, 143), red);
+
+  border-top-right-radius: 20px;
+  border-bottom-right-radius: 20px;
+  border-image: linear-gradient(to right, purple, red) 1;
+}
+
+.Foot{
+   background-color: #f5f5f5;
 }
