@@ -5,6 +5,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Carousel from "../components/Carousel";
 import { supabase } from "../lib/supabase";
+import { createClient } from '@supabase/supabase-js';
 import { useRouter } from "next/navigation";
 
 export default function Homepage() {

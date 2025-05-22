@@ -35,15 +35,20 @@
 //   );
 // }
 
-export const dynamic = 'force-dynamic';
-
+'use client'; // Ensure this is a client component
+import { useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
-import SearchContent from './SearchContent';
 
-export default function Search() {
+function SearchPage() {
+  const searchParams = useSearchParams();
+  // Your component logic
+  return <div>Your search page content</div>;
+}
+
+export default function SearchPageWrapper() {
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <SearchContent />
+      <SearchPage />
     </Suspense>
   );
 }
