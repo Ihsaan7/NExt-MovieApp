@@ -70,9 +70,9 @@ const Page = () => {
               <h2 className="px-5 pt-7 text-3xl font-bold md:text-4xl lg:text-5xl md:pl-20 lg:pl-55">Security</h2>
               <p className="p-2 px-5 text-sm md:text-base md:pl-20 lg:pl-55 font-bold text-gray-700 lg:mb-5">Accounts Details</p>
             </header>
-            <main className="flex flex-col mb-15">
+            <main className="flex flex-col mb-15 ">
               <div className="flex flex-col justify-center">
-                <div className="border rounded-lg w-[90%] md:w-[80%] lg:w-[60%] h-fit self-center border-gray-400">
+                <div className="border bg-white rounded-lg w-[90%] md:w-[80%] lg:w-[60%] h-fit self-center border-gray-400">
                   {[
                     {
                       icon: '../pass.png',
@@ -146,7 +146,7 @@ const Page = () => {
                     },
                   ].map((item, index) => (
                     <div key={index}>
-                      <div className="flex relative lg:mb-5">
+                      <div className="flex relative lg:mb-5 bg-white">
                         <img src={item.icon} className="w-8 h-8 md:w-10 md:h-10 m-4 mr-0 mb-5" alt={item.title} />
                         <div className="mb-2">
                           <h2 className="pl-5 pt-4 text-sm md:text-md font-bold">{item.title}</h2>
@@ -305,7 +305,7 @@ const Page = () => {
         </div>
       </div>
       {/* Footer (moved outside the padded content div) */}
-      <footer className="w-full h-full border-t border-gray-200 mb-5 md:mb-0">
+      <footer className="w-full h-full border-t border-gray-200 mb- md:mb-0">
         <div className="border-t h-full border-gray-300 text-gray-500 flex flex-col Foot">
           <h3 className="p-2 pt-5 text-black pl-5 lg:pl-10 font-bold text-sm md:text-base">
             Questions? <span className="underline hover:cursor-pointer">Contact us.</span>
