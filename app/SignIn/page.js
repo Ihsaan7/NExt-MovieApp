@@ -3,79 +3,176 @@ import { useState } from "react";
 import { supabase } from "../lib/supabase";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 
 export default function SignIn() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
 
   const router = useRouter();
 
   const handleSignIn = async (e) => {
     e.preventDefault();
     setError(null);
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password
-    });
-    if (error) {
-      setError(error.message);
-    } else {
+    setIsLoading(true);
+
+    try {
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (signInError) {
+        if (signInError.message.includes("Invalid login credentials")) {
+          setError("Incorrect email or password. Please try again.");
+        } else {
+          setError(signInError.message);
+        }
+        return;
+      }
+
+      if (rememberMe) {
+        localStorage.setItem("rememberedEmail", email);
+      } else {
+        localStorage.removeItem("rememberedEmail");
+      }
+
       router.push("/Homepage");
+    } catch (err) {
+      setError("An unexpected error occurred. Please try again.");
+      console.error("Sign in error:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
-    <div className="relative h-screen">
-      <img src="/1 (2).png" alt="bg-img" className="h-full w-full object-cover"/>
-      <img src="./netflix.svg" className="w-25 h-30 md:w-50 md:h-50 m-5 mt-0 md:ml-20 absolute z-10 top-0 left-0"/>
+    <div className="relative min-h-screen w-full overflow-hidden">
+      <div className="absolute inset-0">
+        <Image 
+          src="/1 (2).png" 
+          alt="Netflix background" 
+          fill
+          priority
+          className="object-cover"
+          quality={100}
+        />
+      </div>
+      <div className="relative z-10">
+        <Image 
+          src="/netflix.svg" 
+          alt="Netflix Logo" 
+          width={120}
+          height={120}
+          className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 m-4 md:ml-20"
+          priority
+        />
+      </div>
      
-      <form onSubmit={handleSignIn} className="absolute flex flex-col top-40 left-10 w-85 h-150 md:left-80 md:w-120 lg:left-100 items-center rounded-md bg-black/80 border-white">
-        <h1 className="absolute top-0 left-0 text-4xl font-bold w-fit m-2 ml-15 mt-10">Sign In</h1>
-        <input
-          type="email"
-          placeholder="Email or Phone number"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="bg-[rgb(51,51,51)] p-3 mt-30 mb-3 rounded-sm md:w-90 md:h-15 text-left"
-          required
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          className="bg-[rgb(51,51,51)] p-3 mb-10 rounded-sm md:w-90 md:h-15"
-          required
-        />
-        <button
-          type="submit"
-          className="rounded-sm p-3 px-21 font-bold bg-red-600 md:w-90 md:h-15 md:text-lg hover:cursor-pointer"
-        >
-          Sign In
-        </button>
-        {error && <p className="text-red-500 mt-2">{error}</p>}
-        <label className="flex space-x-2 mt-3">
+      <form 
+        onSubmit={handleSignIn} 
+        className="relative z-10 mx-auto mt-8 px-4 py-8 w-[90%] max-w-[450px] md:w-[450px] bg-black/80 rounded-md"
+        aria-label="Sign in form"
+      >
+        <h1 className="text-3xl font-bold mb-6 text-center">Sign In</h1>
+        
+        <div className="space-y-4">
           <input
-            type="checkbox"
-            className="w-3 h-5 accent-red-500 cursor-pointer md:w-5 md:h-6"
+            type="email"
+            placeholder="Email or Phone number"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="w-full p-4 bg-[rgb(51,51,51)] rounded focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            required
+            aria-label="Email or phone number"
+            disabled={isLoading}
+            autoComplete="email"
           />
-          <span className="text-sm mr-20 text-gray-500 md:text-lg md:mr-30">Remember Me</span>
-          <p className="text-sm text-gray-500 md:text-lg hover:cursor-pointer">Need Help?</p>
-        </label>
-        <div className="flex md:flex md:justify-left md:w-100 md:mt-10">
-          <img src="./fb.svg" className="w-10 h-10 m-5 md:w-6 md:h-7 hover:cursor-pointer"/>
-          <span className="text-gray-500 text-lg h-fit mt-6 md:text-sm hover:cursor-pointer">Login with Facebook</span>
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="w-full p-4 bg-[rgb(51,51,51)] rounded focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+            required
+            minLength={6}
+            aria-label="Password"
+            disabled={isLoading}
+            autoComplete="current-password"
+          />
+          <button
+            type="submit"
+            className="w-full py-4 font-bold bg-red-600 rounded hover:bg-red-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+            disabled={isLoading}
+            aria-label={isLoading ? "Signing in..." : "Sign in"}
+          >
+            {isLoading ? "Signing in..." : "Sign In"}
+          </button>
         </div>
-        <div className="md:flex flex-col md:justify-left md:w-90">
-          <p className="text-gray-500 text-center">
-            New to Netflix? 
-            <Link href="/SignUp/1">
-              <span className="text-white hover:cursor-pointer"> SignUp now</span>
+
+        {error && (
+          <div 
+            className="mt-4 p-3 text-red-500 text-center bg-red-50/10 rounded"
+            role="alert"
+          >
+            {error}
+          </div>
+        )}
+
+        <div className="flex items-center justify-between mt-4 text-sm">
+          <label className="flex items-center space-x-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={rememberMe}
+              onChange={(e) => setRememberMe(e.target.checked)}
+              className="w-4 h-4 accent-red-500 cursor-pointer"
+              disabled={isLoading}
+            />
+            <span className="text-gray-500">Remember Me</span>
+          </label>
+          <button 
+            type="button"
+            className="text-gray-500 hover:underline focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-black rounded"
+            disabled={isLoading}
+          >
+            Need Help?
+          </button>
+        </div>
+
+        <div className="flex items-center mt-8">
+          <Image 
+            src="/fb.svg" 
+            alt="Facebook logo" 
+            width={20}
+            height={20}
+            className="w-8 h-8 mr-3"
+          />
+          <span className="text-gray-500 text-sm">
+            Login with Facebook
+          </span>
+        </div>
+
+        <div className="mt-8 text-center">
+          <p className="text-gray-500">
+            New to Netflix?{" "}
+            <Link 
+              href="/SignUp/1"
+              className="text-white hover:underline focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-black rounded"
+            >
+              Sign up now
             </Link>
           </p>
-          <p className="w-80 p-4 mt-10 text-sm text-gray-500 md:w-90 md:p-0 md:pb-5">
-            This page is protected by Google reCAPTCHA to ensure you're not a bot. <a className="text-blue-600 hover:cursor-pointer">Learn more</a>
+          <p className="mt-4 text-xs text-gray-500">
+            This page is protected by Google reCAPTCHA to ensure you're not a bot.{" "}
+            <a 
+              href="#" 
+              className="text-blue-600 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-black rounded"
+            >
+              Learn more
+            </a>
           </p>
         </div>
       </form>
