@@ -218,6 +218,7 @@ const StepPage = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [error, setError] = useState(null);
+    const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
 
     useEffect(() => {
@@ -228,20 +229,25 @@ const StepPage = () => {
     const handleSubmit = async (e) => {
       e.preventDefault();
       setError(null);
+      setIsLoading(true);
+
       try {
-        const { error } = await supabase.auth.signUp({
+        const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
           options: { emailRedirectTo: "http://localhost:3000/Homepage" }
         });
-        if (error) throw error;
-        
+
+        if (signUpError) throw signUpError;
+
         await supabase.from("users").insert([{ email }]);
         localStorage.removeItem("signupEmail");
         router.push("/Homepage");
       } catch (err) {
         console.error("Error:", err.message);
         setError(err.message);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -259,42 +265,69 @@ const StepPage = () => {
         </div>
         <div className="md:flex md:flex-col md:items-center">
           <div className="flex flex-col md:items-center">
-            <form onSubmit={handleSubmit} className="flex flex-col md:items-center">
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email"
-                className="border border-gray-600 px-3 py-5 mt-10 mb-3 rounded-sm md:w-90 md:h-15 text-left"
-                required
-              />
-              <input
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="Add a password"
-                className="border border-gray-600 px-3 py-5 mb-3 rounded-sm md:w-90 md:h-15"
-                required
-              />
+            <form 
+              onSubmit={handleSubmit} 
+              className="flex flex-col md:items-center"
+              aria-label="Create account form"
+            >
+              <div className="w-full lg:flex lg:flex-col lg:items-center">
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="Email"
+                  className="border border-gray-600 px-3 py-5 mt-10 mb-3 rounded-sm md:w-90 md:h-15 text-left focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  required
+                  aria-label="Email address"
+                  disabled={isLoading}
+                />
+              </div>
+              <div className="w-full lg:flex lg:flex-col lg:items-center">
+                <input
+                  type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="Add a password"
+                  className="border border-gray-600 px-3 py-5 mb-3 rounded-sm md:w-90 md:h-15 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  required
+                  minLength={6}
+                  aria-label="Password"
+                  disabled={isLoading}
+                />
+              </div>
               <div className="flex gap-2 md:ml-20 md:w-110">
                 <input
                   type="checkbox"
+                  id="marketing-opt-out"
                   className="w-5 h-5 accent-red-500 cursor-pointer md:w-7 md:h-6"
+                  disabled={isLoading}
                 />
-                <span className="mb-10 text-sm text-black md:text-lg md:mr-30">
+                <label 
+                  htmlFor="marketing-opt-out"
+                  className="mb-10 text-sm text-black md:text-lg md:mr-30 cursor-pointer"
+                >
                   Please do not email me Netflix special offers.
-                </span>
+                </label>
               </div>
               <button
                 type="submit"
-                className="text-white rounded-sm p-3 px-35 py-5 text-2xl font-bold bg-red-600 md:w-90 md:h-15 md:text-lg hover:cursor-pointer"
+                className="text-white rounded-sm p-3 px-35 py-5 text-2xl font-bold bg-red-600 md:w-90 md:h-15 md:text-lg hover:bg-red-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={isLoading}
+                aria-label={isLoading ? "Creating account..." : "Create account"}
               >
-                Next
+                {isLoading ? "Creating account..." : "Next"}
               </button>
             </form>
           </div>
         </div>
-        {error && <p className="text-red-500 mt-2 text-center">{error}</p>}
+        {error && (
+          <div 
+            className="text-red-500 mt-2 text-center p-2 bg-red-50 rounded"
+            role="alert"
+          >
+            {error}
+          </div>
+        )}
       </div>
     );
   };
