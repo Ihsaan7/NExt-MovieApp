@@ -238,14 +238,27 @@ const StepPage = () => {
           options: { emailRedirectTo: "http://localhost:3000/Homepage" }
         });
 
-        if (signUpError) throw signUpError;
+        if (signUpError) {
+          if (signUpError.message.includes("already registered")) {
+            setError({
+              message: "This email is already registered.",
+              type: "existing_user"
+            });
+          } else {
+            throw signUpError;
+          }
+          return;
+        }
 
         await supabase.from("users").insert([{ email }]);
         localStorage.removeItem("signupEmail");
         router.push("/Homepage");
       } catch (err) {
         console.error("Error:", err.message);
-        setError(err.message);
+        setError({
+          message: err.message || "An error occurred during sign up. Please try again.",
+          type: "error"
+        });
       } finally {
         setIsLoading(false);
       }
@@ -322,10 +335,23 @@ const StepPage = () => {
         </div>
         {error && (
           <div 
-            className="text-red-500 mt-2 text-center p-2 bg-red-50 rounded"
+            className="mt-4 p-4 rounded-md text-center"
             role="alert"
           >
-            {error}
+            <p className={`text-lg ${error.type === 'existing_user' ? 'text-red-600' : 'text-red-500'}`}>
+              {error.message}
+            </p>
+            {error.type === 'existing_user' && (
+              <div className="mt-4">
+                <p className="text-gray-600 mb-2">Would you like to sign in instead?</p>
+                <Link 
+                  href="/SignIn"
+                  className="inline-block bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 transition-colors duration-200"
+                >
+                  Sign In
+                </Link>
+              </div>
+            )}
           </div>
         )}
       </div>
