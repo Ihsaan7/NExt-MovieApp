@@ -1,69 +1,97 @@
+'use client';
 import React from "react";
 import Link from "next/link";
+import Image from "next/image";
 
 const SignUp = () => {
   return (
-    <div className="relative h-screen flex flex-col justify-between bg-white text-black">
+    <div className="min-h-screen flex flex-col justify-between bg-white text-black">
       {/* <img src="/1 (2).png" alt="bg-img" className="h-full w-full object-cover "/> */}
-      <nav className="w-full h-20 md:h-25 flex justify-between border-b">
-        <img
-          src="./netflix2.svg"
-          className="w-25 h-20 md:h-30 md:scale-180 md:ml-20"
+      <nav className="w-full h-20 flex items-center justify-between border-b px-4 md:px-8 lg:px-20">
+        <Image
+          src="/netflix2.svg"
+          alt="Netflix Logo"
+          width={180}
+          height={50}
+          className="w-24 md:w-32 lg:w-40"
+          priority
         />
-        <button className="text-black font-bold text-2xl mt-5 mr-5 w-20 h-8 rounded md:mt-10 md:text-3xl md:w-30 hover:cursor-pointer">
-          <Link href="/SignIn">Sign In</Link>
-        </button>
+        <Link 
+          href="/SignIn"
+          className="text-black font-semibold text-lg md:text-xl hover:underline"
+        >
+          Sign In
+        </Link>
       </nav>
-      <div className=" w-full h-130  md:w-150 md:self-center">
-        <div className="flex flex-col w-full pl-20 pb-8  md:pl-40">
-          <img
-            src="./tick.svg"
-            className="w-10 h-fit  mb-5 md:w-15 md:h-20  md:ml-0  top-0 left-0"
-          />
-          <p>
-            STEP <span className="font-bold">1</span> of 
-            <span className="font-bold"> 3</span>
-          </p>
-          <h3 className="text-3xl font-bold">Choose your plan.</h3>
+
+      <main className="flex-1 w-full max-w-4xl mx-auto px-4 md:px-8 py-8 lg:py-12">
+        <div className="space-y-8 lg:max-w-2xl lg:mx-auto">
+          <div className="flex flex-col space-y-4 lg:text-center">
+            <div className="lg:flex lg:justify-center">
+              <Image
+                src="/tick.svg"
+                alt="Step indicator"
+                width={40}
+                height={40}
+                className="w-10 h-10 md:w-12 md:h-12"
+              />
+            </div>
+            <div className="space-y-2">
+              <p className="text-lg">
+                STEP <span className="font-bold">1</span> of 
+                <span className="font-bold"> 3</span>
+              </p>
+              <h1 className="text-3xl md:text-4xl font-bold">
+                Choose your plan.
+              </h1>
+            </div>
+          </div>
+
+          <div className="space-y-6 lg:max-w-xl lg:mx-auto ">
+            {[
+              "No commitments, cancel anytime.",
+              "Everything on Netflix for one low price.",
+              "No ads and no extra fees. Ever."
+            ].map((text, index) => (
+              <div key={index} className="flex items-start gap-4 lg:justify-center">
+                <Image
+                  src="/tick1.svg"
+                  alt="Feature checkmark"
+                  width={24}
+                  height={24}
+                  className="w-6 h-6 md:w-8 md:h-8 flex-shrink-0"
+                />
+                <p className="text-lg">{text}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="pt-8 lg:flex lg:justify-center">
+            <Link href="/SignUp/1">
+              <button 
+                className="w-full md:w-auto bg-red-600 text-white font-semibold text-xl px-8 py-4 rounded hover:bg-red-700 transition-colors"
+                aria-label="Continue to next step"
+              >
+                Next
+              </button>
+            </Link>
+          </div>
         </div>
-        <div className=" flex gap-4 w-full pl-20 p-2 ">
-          <img
-            src="./tick1.svg"
-            className="w-10 h-fit  md:w-20 md:h-15  md:ml-20  top-0 left-0"
-          />
-          <p className="h-fit w-50 ">No commitments, cancel anytime.</p>
+      </main>
+
+      <footer className="border-t border-gray-300 bg-gray-100 py-8 px-4 md:px-8 lg:px-20">
+        <div className="max-w-4xl mx-auto">
+          <h2 className="text-gray-500 mb-4">Questions? Contact us.</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm text-gray-500">
+            <Link href="/faq" className="hover:underline">FAQ</Link>
+            <Link href="/help" className="hover:underline">Help Center</Link>
+            <Link href="/terms" className="hover:underline">Terms of Use</Link>
+            <Link href="/privacy" className="hover:underline">Privacy</Link>
+            <Link href="/cookies" className="hover:underline">Cookie Preferences</Link>
+            <Link href="/corporate" className="hover:underline">Corporate Information</Link>
+          </div>
         </div>
-        <div className=" flex gap-4 w-full pl-20 p-2">
-          <img
-            src="./tick1.svg"
-            className="w-10 h-fit  md:w-20 md:h-15  md:ml-20  top-0 left-0"
-          />
-          <p className="h-fit w-50 ">No commitments, cancel anytime.</p>
-        </div>
-        <div className=" flex gap-4 w-full pl-20 p-2 pb-10">
-          <img
-            src="./tick1.svg"
-            className="w-10 h-fit  md:w-20 md:h-15  md:ml-20  top-0 left-0"
-          />
-          <p className="h-fit w-50 ">No commitments, cancel anytime.</p>
-        </div>
-       <Link href="/SignUp/1">
-  <button className="p-5 text-white font-bold rounded-md text-2xl bg-red-500 ml-20 px-30 py-3 md:ml-40 hover:cursor-pointer">
-    Next
-  </button>
-</Link>
-      </div>
-      <div className="border-t border-gray-300 w-full h-40 text-gray-500 flex flex-col bg-gray-200">
-        <h3 className="p-2 pl-5 lg:pl-10">Questions? Contact us.</h3>
-        <div class="grid grid-cols-3 grid-rows-2 gap-2 p-2 pl-5 pr-0 lg:gap-3 lg:pl-30">
-          <p>FAQ</p>
-          <p>Help Center</p>
-          <p>Term of Use</p>
-          <p>Privacy</p>
-          <p>Cookie Preference</p>
-          <p>Corporate Information</p>
-        </div>
-      </div>
+      </footer>
     </div>
   );
 };
