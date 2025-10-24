@@ -3,6 +3,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import { supabase } from "../../lib/supabase";
+import Image from "next/image";
 
 const PlanCard = ({ plan, selected, onSelect, features }) => {
   const {
@@ -19,52 +20,79 @@ const PlanCard = ({ plan, selected, onSelect, features }) => {
 
   return (
     <div
-      className={`border-2 border-gray-400 w-70 h-fit self-center cursor-pointer mt-10 rounded-lg md:w-90 lg:w-70 ${
-        selected ? "shadow-md shadow-black border-black-500" : ""
-      }`}
+      className={`relative border-2 transition-all duration-200 cursor-pointer rounded-lg overflow-hidden bg-white shadow-sm hover:shadow-md ${
+        selected 
+          ? "border-red-500 shadow-lg ring-2 ring-red-500 ring-opacity-50" 
+          : "border-gray-300 hover:border-gray-400"
+      } w-full max-w-sm mx-auto`}
       onClick={() => onSelect(title)}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          onSelect(title);
+        }
+      }}
+      aria-pressed={selected}
+      aria-label={`Select ${title} plan for PKR ${price} per month`}
     >
       {isPopular && (
-        <div className="w-full h-10 flex justify-center align-center flex-col rounded-t-md bg-red-500">
-          <h4 className="text-center font-bold text-white">Most popular</h4>
+        <div className="w-full bg-gradient-to-r from-red-500 to-red-600 py-2">
+          <p className="text-center font-bold text-white text-sm">Most Popular</p>
         </div>
       )}
-      <div className="w-65 flex justify-between mobileBorder h-20 rounded-lg mt-2 ml-2 mb-4 md:w-85 lg:w-65">
-        <div>
-          <h2 className="text-2xl p-3 pb-0">{title}</h2>
-          <p className="pl-3 font-bold">{quality}</p>
+      
+      <div className={`p-4 ${isPopular ? '' : 'pt-6'}`}>
+        {/* Plan Header */}
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h3 className="text-xl font-bold text-gray-900">{title}</h3>
+            <p className="text-sm font-medium text-gray-600">{quality}</p>
+          </div>
+          {selected && (
+            <div className="flex-shrink-0">
+              <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
+                <svg className="w-4 h-4 text-white" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                </svg>
+              </div>
+            </div>
+          )}
         </div>
-        {selected && (
-          <img
-            src="../check (3).png"
-            className="w-10 h-10 self-end pb-2 pr-2 checked"
-            alt={`Selected ${title} plan`}
-          />
-        )}
-      </div>
-      <div className="border-b w-55 ml-5">
-        <h4>Monthly price</h4>
-        <h2 className="text-xl font-bold pb-5">PKR {price}</h2>
-      </div>
-      <div className="border-b w-55 ml-5">
-        <h4 className="pt-3">Video and sound quality</h4>
-        <h2 className="text-xl font-bold pb-5">{videoQuality}</h2>
-      </div>
-      <div className="border-b w-55 ml-5">
-        <h4 className="pt-3">Resolution</h4>
-        <h2 className="text-xl font-bold pb-5">{resolution}</h2>
-      </div>
-      <div className="border-b w-55 ml-5">
-        <h4 className="pt-3">Supported devices</h4>
-        <h2 className="text-xl font-bold pb-5">{devices}</h2>
-      </div>
-      <div className="border-b w-55 ml-5">
-        <h4 className="pt-3">Devices your household can watch at the same time</h4>
-        <h2 className="text-xl font-bold pb-5">{simultaneousStreams}</h2>
-      </div>
-      <div className="w-55 ml-5">
-        <h4 className="pt-3">Download devices</h4>
-        <h2 className="text-xl font-bold pb-5">{downloads}</h2>
+
+        {/* Plan Details */}
+        <div className="space-y-3">
+          <div className="border-b border-gray-200 pb-3">
+            <p className="text-sm text-gray-600">Monthly price</p>
+            <p className="text-lg font-bold text-gray-900">PKR {price}</p>
+          </div>
+          
+          <div className="border-b border-gray-200 pb-3">
+            <p className="text-sm text-gray-600">Video and sound quality</p>
+            <p className="text-sm font-medium text-gray-900">{videoQuality}</p>
+          </div>
+          
+          <div className="border-b border-gray-200 pb-3">
+            <p className="text-sm text-gray-600">Resolution</p>
+            <p className="text-sm font-medium text-gray-900">{resolution}</p>
+          </div>
+          
+          <div className="border-b border-gray-200 pb-3">
+            <p className="text-sm text-gray-600">Supported devices</p>
+            <p className="text-sm font-medium text-gray-900">{devices}</p>
+          </div>
+          
+          <div className="border-b border-gray-200 pb-3">
+            <p className="text-sm text-gray-600">Simultaneous streams</p>
+            <p className="text-sm font-medium text-gray-900">{simultaneousStreams}</p>
+          </div>
+          
+          <div className="pb-2">
+            <p className="text-sm text-gray-600">Download devices</p>
+            <p className="text-sm font-medium text-gray-900">{downloads}</p>
+          </div>
+        </div>
       </div>
     </div>
   );
@@ -123,93 +151,164 @@ const StepPage = () => {
   };
 
   const renderStep1 = () => (
-    <div className="relative h-fit flex flex-col bg-white text-black">
-      <nav className="w-full h-20 md:h-25 flex justify-between border-b">
-        <img
-          src="../netflix2.svg"
-          alt="Netflix Logo"
-          className="w-25 h-20 md:h-30 md:scale-180 md:ml-20"
-        />
-        <button className="text-black font-bold text-2xl mt-5 mr-5 w-20 h-8 rounded md:mt-10 md:text-3xl md:w-30 hover:cursor-pointer">
-          <Link href="/SignIn">Sign In</Link>
-        </button>
+    <div className="min-h-screen flex flex-col bg-white text-black">
+      {/* Navigation */}
+      <nav className="w-full border-b border-gray-200 bg-white sticky top-0 z-10">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16 md:h-20">
+            <div className="flex-shrink-0">
+              <Image
+                src="/netflix2.svg"
+                alt="Netflix Logo"
+                width={120}
+                height={32}
+                className="h-8 w-auto md:h-10"
+                priority
+              />
+            </div>
+            <Link 
+              href="/SignIn"
+              className="text-black font-semibold text-lg hover:underline transition-colors duration-200"
+            >
+              Sign In
+            </Link>
+          </div>
+        </div>
       </nav>
-      <div className="w-full h-full">
-        <p className="mt-5 ml-10">
-          STEP <span className="font-bold">1</span> of
-          <span className="font-bold"> 3</span>
-        </p>
-        <h3 className="text-3xl font-bold mb-3 ml-10">Choose your plan.</h3>
-        <div className="w-full h-full flex flex-col gap-10 mb-10 md:grid md:grid-cols-2 md:grid-row-2 md:h-full md:place-items-center md:gap-0 lg:flex lg:flex-row lg:gap-5 lg:pl-10">
-          {Object.entries(plans).map(([key, features]) => (
-            <PlanCard
-              key={key}
-              plan={key}
-              selected={select === key}
-              onSelect={setSelect}
-              features={features}
-            />
-          ))}
+
+      {/* Main Content */}
+      <main className="flex-1">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          {/* Progress Indicator */}
+          <div className="mb-8">
+            <p className="text-sm text-gray-600 uppercase tracking-wide">
+              STEP <span className="font-bold">1</span> OF <span className="font-bold">3</span>
+            </p>
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mt-2">
+              Choose your plan
+            </h1>
+            <p className="text-lg text-gray-600 mt-2">
+              No commitments, cancel anytime.
+            </p>
+          </div>
+
+          {/* Plan Selection */}
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-12">
+            {Object.entries(plans).map(([key, features]) => (
+              <PlanCard
+                key={key}
+                plan={key}
+                selected={select === key}
+                onSelect={setSelect}
+                features={features}
+              />
+            ))}
+          </div>
+
+          {/* Action Button */}
+          <div className="flex justify-center mb-12">
+            <Link href="/SignUp/2">
+              <button 
+                className="bg-red-600 text-white px-8 py-4 rounded-md text-lg font-semibold hover:bg-red-700 transition-colors duration-200 min-w-[200px] focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                disabled={!select}
+              >
+                Next
+              </button>
+            </Link>
+          </div>
+
+          {/* Disclaimer */}
+          <div className="bg-gray-50 rounded-lg p-6 mb-8">
+            <div className="space-y-4 text-sm text-gray-600">
+              <p>
+                HD (720p), Full HD (1080p), Ultra HD (4K) and HDR availability subject to your internet service and device capabilities. Not all content is available in all resolutions. See our{" "}
+                <Link href="/terms" className="text-red-600 hover:underline">
+                  Terms of Use
+                </Link>{" "}
+                for more details.
+              </p>
+              <p>
+                Only people who live with you may use your account. Watch on 4 different devices at the same time with Premium, 2 with Standard, and 1 with Basic and Mobile.
+              </p>
+              <p>
+                Live events are included with any Netflix plan and contain ads.
+              </p>
+            </div>
+          </div>
         </div>
-      </div>
-      <div className="w-full h-100 mt-20 text-gray-600">
-        <p className="pl-4 pb-4">
-          HD (720p), Full HD (1080p), Ultra HD (4K) and HDR availability subject to your internet service and device capabilities. Not all content is available in all resolutions. See our{" "}
-          <Link href="/terms" className="text-blue-600 cursor-pointer">
-            Terms of Use
-          </Link>{" "}
-          for more details.
-        </p>
-        <p className="pl-4 pb-4">
-          Only people who live with you may use your account. Watch on 4 different devices at the same time with Premium, 2 with Standard, and 1 with Basic and Mobile.
-        </p>
-        <p className="pl-4">Live events are included with any Netflix plan and contain ads.</p>
-        <div className="md:w-full md:flex md:flex-col md:align-center cursor-pointer">
-          <Link href="/SignUp/2">
-            <button className="p-5 text-white font-bold rounded-md text-2xl bg-red-500 ml-15 px-30 py-3 mt-10 md:self-center hover:cursor-pointer lg:px-50 lg:py-5 lg:mt-20 lg:ml-100">
-              Next
-            </button>
-          </Link>
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t border-gray-200 bg-gray-50">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <h3 className="text-gray-600 mb-4 font-medium">Questions? Contact us.</h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4 text-sm">
+            <Link href="/faq" className="text-gray-600 hover:underline">FAQ</Link>
+            <Link href="/help" className="text-gray-600 hover:underline">Help Center</Link>
+            <Link href="/terms" className="text-gray-600 hover:underline">Terms of Use</Link>
+            <Link href="/privacy" className="text-gray-600 hover:underline">Privacy</Link>
+            <Link href="/cookies" className="text-gray-600 hover:underline">Cookie Preferences</Link>
+            <Link href="/corporate" className="text-gray-600 hover:underline">Corporate Information</Link>
+          </div>
         </div>
-      </div>
-      <div className="border-t border-gray-300 w-full h-40 text-gray-500 flex flex-col bg-gray-200">
-        <h3 className="p-2 pl-5 lg:pl-10">Questions? Contact us.</h3>
-        <div className="grid grid-cols-3 grid-rows-2 gap-2 p-2 pl-5 pr-0 lg:gap-3 lg:pl-30">
-          <Link href="/faq" className="hover:underline">FAQ</Link>
-          <Link href="/help" className="hover:underline">Help Center</Link>
-          <Link href="/terms" className="hover:underline">Terms of Use</Link>
-          <Link href="/privacy" className="hover:underline">Privacy</Link>
-          <Link href="/cookies" className="hover:underline">Cookie Preferences</Link>
-          <Link href="/corporate" className="hover:underline">Corporate Information</Link>
-        </div>
-      </div>
+      </footer>
     </div>
   );
 
   const renderStep2 = () => (
-    <div className="bg-white w-full h-screen text-black flex flex-col items-center justify-center gap-10">
-      <div className="lg:w-full flex flex-col items-center gap-10">
-        <div className="flex flex-row gap-5 justify-center items-center">
-          <img src="/1 (4).png" className="w-20 h-20 md:w-30 md:h-30" alt="Icon 1" />
-          <img src="/1 (3).png" className="w-20 h-20 md:w-30 md:h-30" alt="Icon 2" />
-          <img src="/1 (1).png" className="w-20 h-20 md:w-25 md:h-25 md:mt-2" alt="Icon 3" />
+    <div className="min-h-screen bg-white text-black flex flex-col items-center justify-center px-4">
+      <div className="max-w-md w-full text-center space-y-8">
+        {/* Icons */}
+        <div className="flex justify-center items-center gap-4 mb-8">
+          <div className="w-16 h-16 md:w-20 md:h-20 relative">
+            <Image 
+              src="/1 (4).png" 
+              alt="Device icon" 
+              fill
+              className="object-contain"
+            />
+          </div>
+          <div className="w-16 h-16 md:w-20 md:h-20 relative">
+            <Image 
+              src="/1 (3).png" 
+              alt="Content icon" 
+              fill
+              className="object-contain"
+            />
+          </div>
+          <div className="w-16 h-16 md:w-20 md:h-20 relative">
+            <Image 
+              src="/1 (1).png" 
+              alt="Quality icon" 
+              fill
+              className="object-contain"
+            />
+          </div>
         </div>
-        <div className="text-center w-full flex flex-col items-center px-5">
-          <p className="text-md md:w-full flex justify-center">
-            STEP <span className="font-bold px-1">2</span> OF <span className="font-bold px-1">3</span>
+
+        {/* Content */}
+        <div className="space-y-6">
+          <p className="text-sm text-gray-600 uppercase tracking-wide">
+            STEP <span className="font-bold">2</span> OF <span className="font-bold">3</span>
           </p>
-          <h2 className="text-2xl font-bold pb-5 w-70 md:w-full text-center md:text-3xl">
+          
+          <h1 className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight">
             Finish setting up your account
-          </h2>
-          <h4 className="text-center w-75 md:w-full">
+          </h1>
+          
+          <p className="text-lg text-gray-600 leading-relaxed">
             Netflix is personalized for you. Create a password to watch on any device at any time.
-          </h4>
+          </p>
         </div>
-        <Link href="/SignUp/3">
-          <button className="p-5 text-white font-bold rounded-md text-2xl bg-red-500 mx-auto px-30 py-3 hover:cursor-pointer">
-            Next
-          </button>
-        </Link>
+
+        {/* Action Button */}
+        <div className="pt-4">
+          <Link href="/SignUp/3">
+            <button className="w-full bg-red-600 text-white px-8 py-4 rounded-md text-lg font-semibold hover:bg-red-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2">
+              Next
+            </button>
+          </Link>
+        </div>
       </div>
     </div>
   );
@@ -217,6 +316,8 @@ const StepPage = () => {
   const renderStep3 = () => {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+    const [showPassword, setShowPassword] = useState(false);
+    const [marketingOptOut, setMarketingOptOut] = useState(false);
     const [error, setError] = useState(null);
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
@@ -226,16 +327,39 @@ const StepPage = () => {
       if (storedEmail) setEmail(storedEmail);
     }, []);
 
+    const validatePassword = (password) => {
+      if (password.length < 6) {
+        return "Password must be at least 6 characters long";
+      }
+      if (password.length > 60) {
+        return "Password must be less than 60 characters";
+      }
+      return null;
+    };
+
     const handleSubmit = async (e) => {
       e.preventDefault();
       setError(null);
+
+      // Validate password
+      const passwordError = validatePassword(password);
+      if (passwordError) {
+        setError({ message: passwordError, type: "validation" });
+        return;
+      }
+
       setIsLoading(true);
 
       try {
         const { error: signUpError } = await supabase.auth.signUp({
           email,
           password,
-          options: { emailRedirectTo: "http://localhost:3000/Homepage" }
+          options: { 
+            emailRedirectTo: `${window.location.origin}/Homepage`,
+            data: {
+              marketing_opt_out: marketingOptOut
+            }
+          }
         });
 
         if (signUpError) {
@@ -250,7 +374,12 @@ const StepPage = () => {
           return;
         }
 
-        await supabase.from("users").insert([{ email }]);
+        // Store user data
+        await supabase.from("users").insert([{ 
+          email,
+          marketing_opt_out: marketingOptOut 
+        }]);
+        
         localStorage.removeItem("signupEmail");
         router.push("/Homepage");
       } catch (err) {
@@ -265,95 +394,142 @@ const StepPage = () => {
     };
 
     return (
-      <div className="w-full h-screen text-black bg-white p-10 md:flex md:flex-col md:justify-center md:items-center">
-        <div className="mt-10 py-2">
-          <p>
-            STEP <span className="font-bold">3</span> OF
-            <span className="font-bold"> 3</span>
-          </p>
-        </div>
-        <div className="md:text-center">
-          <h2 className="text-3xl py-4">Create a password to start your membership</h2>
-          <p className="text-lg">Just a few more steps and you're done! We hate paperwork, too.</p>
-        </div>
-        <div className="md:flex md:flex-col md:items-center">
-          <div className="flex flex-col md:items-center">
-            <form 
-              onSubmit={handleSubmit} 
-              className="flex flex-col md:items-center"
-              aria-label="Create account form"
-            >
-              <div className="w-full lg:flex lg:flex-col lg:items-center">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Email"
-                  className="border border-gray-600 px-3 py-5 mt-10 mb-3 rounded-sm md:w-90 md:h-15 text-left focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                  required
-                  aria-label="Email address"
-                  disabled={isLoading}
-                />
-              </div>
-              <div className="w-full lg:flex lg:flex-col lg:items-center">
-                <input
-                  type="password"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Add a password"
-                  className="border border-gray-600 px-3 py-5 mb-3 rounded-sm md:w-90 md:h-15 focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                  required
-                  minLength={6}
-                  aria-label="Password"
-                  disabled={isLoading}
-                />
-              </div>
-              <div className="flex gap-2 md:ml-20 md:w-110">
-                <input
-                  type="checkbox"
-                  id="marketing-opt-out"
-                  className="w-5 h-5 accent-red-500 cursor-pointer md:w-7 md:h-6"
-                  disabled={isLoading}
-                />
-                <label 
-                  htmlFor="marketing-opt-out"
-                  className="mb-10 text-sm text-black md:text-lg md:mr-30 cursor-pointer"
-                >
-                  Please do not email me Netflix special offers.
-                </label>
-              </div>
-              <button
-                type="submit"
-                className="text-white rounded-sm p-3 px-35 py-5 text-2xl font-bold bg-red-600 md:w-90 md:h-15 md:text-lg hover:bg-red-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={isLoading}
-                aria-label={isLoading ? "Creating account..." : "Create account"}
-              >
-                {isLoading ? "Creating account..." : "Next"}
-              </button>
-            </form>
-          </div>
-        </div>
-        {error && (
-          <div 
-            className="mt-4 p-4 rounded-md text-center"
-            role="alert"
-          >
-            <p className={`text-lg ${error.type === 'existing_user' ? 'text-red-600' : 'text-red-500'}`}>
-              {error.message}
+      <div className="min-h-screen bg-white text-black flex flex-col justify-center px-4">
+        <div className="max-w-md mx-auto w-full">
+          {/* Progress Indicator */}
+          <div className="text-center mb-8">
+            <p className="text-sm text-gray-600 uppercase tracking-wide mb-4">
+              STEP <span className="font-bold">3</span> OF <span className="font-bold">3</span>
             </p>
-            {error.type === 'existing_user' && (
-              <div className="mt-4">
-                <p className="text-gray-600 mb-2">Would you like to sign in instead?</p>
-                <Link 
-                  href="/SignIn"
-                  className="inline-block bg-red-600 text-white px-6 py-2 rounded-md hover:bg-red-700 transition-colors duration-200"
-                >
-                  Sign In
-                </Link>
-              </div>
-            )}
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-4">
+              Create a password to start your membership
+            </h1>
+            <p className="text-lg text-gray-600">
+              Just a few more steps and you're done! We hate paperwork, too.
+            </p>
           </div>
-        )}
+
+          {/* Form */}
+          <form onSubmit={handleSubmit} className="space-y-6" aria-label="Create account form">
+            {/* Email Input */}
+            <div>
+              <label htmlFor="email" className="sr-only">Email address</label>
+              <input
+                id="email"
+                type="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="Email"
+                className="w-full px-4 py-4 border border-gray-300 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors duration-200"
+                required
+                disabled={isLoading}
+              />
+            </div>
+
+            {/* Password Input */}
+            <div className="relative">
+              <label htmlFor="password" className="sr-only">Password</label>
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="Add a password"
+                className="w-full px-4 py-4 pr-12 border border-gray-300 rounded-md text-base focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-colors duration-200"
+                required
+                minLength={6}
+                maxLength={60}
+                disabled={isLoading}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-gray-700 focus:outline-none"
+                disabled={isLoading}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L3 3m6.878 6.878L21 21" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                  </svg>
+                )}
+              </button>
+            </div>
+
+            {/* Marketing Opt-out Checkbox */}
+            <div className="flex items-start gap-3">
+              <input
+                type="checkbox"
+                id="marketing-opt-out"
+                checked={marketingOptOut}
+                onChange={(e) => setMarketingOptOut(e.target.checked)}
+                className="mt-1 w-4 h-4 text-red-600 border-gray-300 rounded focus:ring-red-500 focus:ring-2"
+                disabled={isLoading}
+              />
+              <label 
+                htmlFor="marketing-opt-out"
+                className="text-sm text-gray-700 cursor-pointer leading-relaxed"
+              >
+                Please do not email me Netflix special offers.
+              </label>
+            </div>
+
+            {/* Submit Button */}
+            <button
+              type="submit"
+              className="w-full bg-red-600 text-white px-8 py-4 rounded-md text-lg font-semibold hover:bg-red-700 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <div className="flex items-center justify-center gap-2">
+                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                  Creating account...
+                </div>
+              ) : (
+                "Start Membership"
+              )}
+            </button>
+          </form>
+
+          {/* Error Display - Netflix Style Inline */}
+          {error && (
+            <div className="mt-4 p-4 bg-orange-50 border-l-4 border-orange-400 rounded-r-md" role="alert">
+              <div className="flex items-start">
+                <div className="flex-shrink-0">
+                  <svg className="w-5 h-5 text-orange-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                  </svg>
+                </div>
+                <div className="ml-3 flex-1">
+                  <p className="text-sm font-medium text-orange-800">
+                    {error.message}
+                  </p>
+                  {error.type === 'existing_user' && (
+                    <div className="mt-3">
+                      <p className="text-sm text-orange-700 mb-3">
+                        Already have an account? Sign in to continue.
+                      </p>
+                      <Link 
+                        href="/SignIn"
+                        className="inline-flex items-center px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-md hover:bg-red-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2"
+                      >
+                        Sign In
+                        <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                        </svg>
+                      </Link>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     );
   };
