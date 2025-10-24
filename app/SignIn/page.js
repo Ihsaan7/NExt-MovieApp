@@ -47,14 +47,14 @@ export default function SignIn() {
     setIsLoading(true);
 
     try {
-      console.log("Attempting to sign in with:", { email: email.trim().toLowerCase(), supabaseUrl: process.env.NEXT_PUBLIC_SUPABASE_URL });
+
       
       const { data, error: signInError } = await supabase.auth.signInWithPassword({
         email: email.trim().toLowerCase(),
         password
       });
 
-      console.log("Supabase response:", { data, error: signInError });
+
 
       if (signInError) {
         console.error("Sign in error details:", signInError);
@@ -81,7 +81,7 @@ export default function SignIn() {
         return;
       }
 
-      console.log("Sign in successful:", data);
+
 
       // Handle remember me
       if (rememberMe) {
@@ -99,46 +99,7 @@ export default function SignIn() {
     }
   };
 
-  // Debug function to check Supabase connection
-  const testSupabaseConnection = async () => {
-    try {
-      console.log("Testing Supabase connection...");
-      const { data, error } = await supabase.auth.getSession();
-      console.log("Supabase session test:", { data, error });
-      
-      // Test if we can reach Supabase
-      const { data: testData, error: testError } = await supabase.from('users').select('count').limit(1);
-      console.log("Supabase database test:", { testData, testError });
-      
-    } catch (err) {
-      console.error("Supabase connection test failed:", err);
-    }
-  };
 
-  // Function to resend confirmation email
-  const resendConfirmation = async (email) => {
-    try {
-      const { error } = await supabase.auth.resend({
-        type: 'signup',
-        email: email.trim().toLowerCase()
-      });
-      
-      if (error) {
-        console.error("Resend confirmation error:", error);
-        setError(`Could not resend confirmation: ${error.message}`);
-      } else {
-        setError("Confirmation email sent! Please check your inbox and click the confirmation link.");
-      }
-    } catch (err) {
-      console.error("Resend confirmation failed:", err);
-      setError("Failed to resend confirmation email.");
-    }
-  };
-
-  useEffect(() => {
-    // Test connection on component mount
-    testSupabaseConnection();
-  }, []);
 
   return (
     <div className="relative min-h-screen w-full overflow-hidden">
@@ -271,15 +232,15 @@ export default function SignIn() {
                     {error.type === 'credentials' && error.email && (
                       <div className="mt-3">
                         <p className="text-sm text-orange-300 mb-2">
-                          Need a confirmation email resent?
+                          Please check your email and confirm your account.
                         </p>
                         <button
                           type="button"
-                          onClick={() => resendConfirmation(error.email)}
+                          onClick={() => window.location.reload()}
                           className="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-black"
                           disabled={isLoading}
                         >
-                          Resend Confirmation Email
+                          Try Again
                         </button>
                       </div>
                     )}
@@ -287,11 +248,11 @@ export default function SignIn() {
                       <div className="mt-3">
                         <button
                           type="button"
-                          onClick={() => resendConfirmation(error.email)}
+                          onClick={() => window.location.reload()}
                           className="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-black"
                           disabled={isLoading}
                         >
-                          Resend Confirmation Email
+                          Try Again
                         </button>
                       </div>
                     )}
@@ -351,20 +312,7 @@ export default function SignIn() {
               </p>
             </div>
 
-            {/* Debug Section - Remove this in production */}
-            <div className="mt-6 p-3 bg-gray-800/50 rounded border border-gray-600">
-              <p className="text-xs text-gray-400 mb-2">Debug Info:</p>
-              <button
-                type="button"
-                onClick={testSupabaseConnection}
-                className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 transition-colors duration-200"
-              >
-                Test Supabase Connection
-              </button>
-              <p className="text-xs text-gray-400 mt-2">
-                Check browser console for detailed logs
-              </p>
-            </div>
+
 
             {/* reCAPTCHA Notice */}
             <div className="mt-6 text-center">
