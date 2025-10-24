@@ -8,8 +8,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-inter);
+  --font-display: var(--font-roboto);
 }
 
 * {
@@ -18,33 +18,48 @@
 
 html {
   scroll-behavior: smooth;
+  /* Hide scrollbar for Netflix-like experience */
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* Internet Explorer 10+ */
+}
+
+html::-webkit-scrollbar {
+  display: none; /* WebKit */
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Helvetica Neue', Arial, sans-serif;
+  font-family: var(--font-inter), 'Helvetica Neue', Arial, sans-serif;
   margin: 0;
   padding: 0;
   overflow-x: hidden;
 }
 
-/* Custom scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
+/* Netflix-like font classes */
+.font-netflix {
+  font-family: var(--font-roboto), 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 500;
 }
 
-::-webkit-scrollbar-track {
-  background: #1a1a1a;
+.font-netflix-bold {
+  font-family: var(--font-roboto), 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 700;
 }
 
-::-webkit-scrollbar-thumb {
-  background: #333;
-  border-radius: 4px;
+.font-netflix-light {
+  font-family: var(--font-roboto), 'Helvetica Neue', Arial, sans-serif;
+  font-weight: 300;
 }
 
-::-webkit-scrollbar-thumb:hover {
-  background: #555;
+/* Hide scrollbars but keep functionality */
+.hide-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
 }
 
 /* Focus styles for accessibility */

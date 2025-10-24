@@ -94,21 +94,27 @@ export default function Homepage() {
   // Custom arrow components to fix React DOM warnings
   const NextArrow = ({ onClick }) => (
     <button
-      className="slick-arrow slick-next absolute top-1/2 right-2 z-10 transform -translate-y-1/2 bg-black/70 hover:bg-black/90 text-white rounded-full w-10 h-10 flex items-center justify-center transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white"
+      className="slick-arrow slick-next absolute top-1/2 -right-4 z-20 transform -translate-y-1/2 bg-black/80 hover:bg-black text-white rounded-full w-12 h-12 flex items-center justify-center transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white shadow-lg hover:scale-110"
       onClick={onClick}
       aria-label="Next slide"
+      style={{ display: 'flex !important' }}
     >
-      →
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+      </svg>
     </button>
   );
 
   const PrevArrow = ({ onClick }) => (
     <button
-      className="slick-arrow slick-prev absolute top-1/2 left-2 z-10 transform -translate-y-1/2 bg-black/70 hover:bg-black/90 text-white rounded-full w-10 h-10 flex items-center justify-center transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white"
+      className="slick-arrow slick-prev absolute top-1/2 -left-4 z-20 transform -translate-y-1/2 bg-black/80 hover:bg-black text-white rounded-full w-12 h-12 flex items-center justify-center transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white shadow-lg hover:scale-110"
       onClick={onClick}
       aria-label="Previous slide"
+      style={{ display: 'flex !important' }}
     >
-      ←
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+      </svg>
     </button>
   );
 
@@ -159,27 +165,27 @@ export default function Homepage() {
         </div>
 
         {/* Navigation */}
-        <nav className="relative z-20 flex justify-between items-center px-4 sm:px-6 lg:px-8 py-4">
+        <nav className="relative z-20 flex justify-between items-center px-4 sm:px-6 lg:px-8 py-6">
           <div className="flex items-center gap-8">
             <Link href="/Homepage">
               <Image
                 src="/netflix2.svg"
                 alt="Netflix Logo"
-                width={120}
-                height={32}
-                className="h-8 w-auto"
+                width={148}
+                height={40}
+                className="h-10 w-auto sm:h-12 sm:w-auto"
                 priority
               />
             </Link>
             
-            <div className="hidden md:flex items-center gap-6">
-              <Link href="/Homepage" className="text-white hover:text-gray-300 transition-colors duration-200">
+            <div className="hidden md:flex items-center gap-8">
+              <Link href="/Homepage" className="text-white hover:text-gray-300 transition-colors duration-200 font-netflix text-sm">
                 Home
               </Link>
-              <Link href="/TvShow" className="text-white hover:text-gray-300 transition-colors duration-200">
+              <Link href="/TvShow" className="text-white hover:text-gray-300 transition-colors duration-200 font-netflix text-sm">
                 TV Shows
               </Link>
-              <Link href="/Mylist" className="text-white hover:text-gray-300 transition-colors duration-200">
+              <Link href="/Mylist" className="text-white hover:text-gray-300 transition-colors duration-200 font-netflix text-sm">
                 My List
               </Link>
             </div>
@@ -344,16 +350,16 @@ export default function Homepage() {
 
             {/* Title */}
             {featuredMovie && (
-              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold text-white mb-4 leading-tight">
+              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-netflix-bold text-white mb-6 leading-tight">
                 {featuredMovie.title}
               </h1>
             )}
 
             {/* Description */}
             {featuredMovie?.overview && (
-              <p className="text-lg text-white/90 mb-8 leading-relaxed max-w-xl">
-                {featuredMovie.overview.length > 150 
-                  ? `${featuredMovie.overview.substring(0, 150)}...` 
+              <p className="text-lg sm:text-xl text-white/90 mb-8 leading-relaxed max-w-2xl font-netflix-light">
+                {featuredMovie.overview.length > 200 
+                  ? `${featuredMovie.overview.substring(0, 200)}...` 
                   : featuredMovie.overview
                 }
               </p>
@@ -412,17 +418,17 @@ export default function Homepage() {
         ) : (
           <>
             <div className="mb-12">
-              <h2 className="text-white text-xl sm:text-2xl font-bold px-4 sm:px-6 lg:px-8 mb-4">Popular Movies</h2>
+              <h2 className="text-white text-xl sm:text-2xl font-netflix-bold px-4 sm:px-6 lg:px-8 mb-6">Popular Movies</h2>
               <Carousel items={movies} loading={loading} settings={settings} />
             </div>
             
             <div className="mb-12">
-              <h2 className="text-white text-xl sm:text-2xl font-bold px-4 sm:px-6 lg:px-8 mb-4">K-Dramas</h2>
+              <h2 className="text-white text-xl sm:text-2xl font-netflix-bold px-4 sm:px-6 lg:px-8 mb-6">K-Dramas</h2>
               <Carousel items={kDramas} loading={loading} settings={settings} />
             </div>
             
             <div className="mb-12">
-              <h2 className="text-white text-xl sm:text-2xl font-bold px-4 sm:px-6 lg:px-8 mb-4">Trending Series</h2>
+              <h2 className="text-white text-xl sm:text-2xl font-netflix-bold px-4 sm:px-6 lg:px-8 mb-6">Trending Series</h2>
               <Carousel items={series} loading={loading} settings={settings} />
             </div>
           </>

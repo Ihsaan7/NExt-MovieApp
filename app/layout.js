@@ -1,20 +1,21 @@
-import { Geist, Geist_Mono } from "next/font/google";
+import { Inter, Roboto } from "next/font/google";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const inter = Inter({
+  variable: "--font-inter",
   subsets: ["latin"],
   display: "swap",
   preload: true,
   fallback: ["system-ui", "Arial", "sans-serif"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const roboto = Roboto({
+  variable: "--font-roboto",
   subsets: ["latin"],
+  weight: ["300", "400", "500", "700", "900"],
   display: "swap",
   preload: true,
-  fallback: ["monospace"],
+  fallback: ["Arial", "sans-serif"],
 });
 
 export const metadata = {
@@ -51,7 +52,7 @@ export default function RootLayout({ children }) {
   return (
     <html 
       lang="en" 
-      className={`${geistSans.variable} ${geistMono.variable}`}
+      className={`${inter.variable} ${roboto.variable}`}
       suppressHydrationWarning
     >
       <head>
