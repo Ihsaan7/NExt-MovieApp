@@ -174,18 +174,36 @@ export default function Homepage() {
   return (
     <div className="min-h-screen bg-black">
       {/* Hero Section */}
-      <div className="relative w-full h-screen overflow-hidden">
+      <div className="relative w-full h-screen min-h-[600px] overflow-hidden">
         {/* Background Image */}
         <div className="absolute inset-0">
           {featuredMovie?.backdrop_path ? (
-            <Image
-              src={`https://image.tmdb.org/t/p/original${featuredMovie.backdrop_path}`}
-              alt={featuredMovie.title || 'Featured content'}
-              fill
-              className="object-cover object-center"
-              priority
-              quality={85}
-            />
+            <>
+              {/* Mobile optimized image */}
+              <div className="block md:hidden">
+                <Image
+                  src={`https://image.tmdb.org/t/p/w780${featuredMovie.backdrop_path}`}
+                  alt={featuredMovie.title || 'Featured content'}
+                  fill
+                  className="object-cover object-top"
+                  priority
+                  quality={90}
+                  sizes="100vw"
+                />
+              </div>
+              {/* Desktop optimized image */}
+              <div className="hidden md:block">
+                <Image
+                  src={`https://image.tmdb.org/t/p/original${featuredMovie.backdrop_path}`}
+                  alt={featuredMovie.title || 'Featured content'}
+                  fill
+                  className="object-cover object-center"
+                  priority
+                  quality={85}
+                  sizes="100vw"
+                />
+              </div>
+            </>
           ) : (
             <Image
               src="/wall11.png"
@@ -193,6 +211,7 @@ export default function Homepage() {
               fill
               className="object-cover object-center"
               priority
+              sizes="100vw"
             />
           )}
           {/* Gradient Overlays */}
@@ -376,30 +395,38 @@ export default function Homepage() {
         </nav>
 
         {/* Hero Content */}
-        <div className="relative z-10 flex items-center min-h-[calc(100vh-80px)] px-4 sm:px-6 lg:px-8">
+        <div className="relative z-10 flex items-end md:items-center min-h-[calc(100vh-80px)] px-4 sm:px-6 lg:px-8 pb-20 md:pb-0">
           <div className="max-w-2xl">
             {/* Netflix Badge */}
             <div className="flex items-center gap-2 mb-4">
               <div className="w-6 h-6 bg-red-600 rounded flex items-center justify-center">
                 <span className="text-white text-xs font-bold">N</span>
               </div>
-              <span className="text-white font-semibold">MOVIE</span>
+              <span className="text-white font-semibold text-sm sm:text-base">MOVIE</span>
             </div>
 
             {/* Title */}
             {featuredMovie && (
-              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-netflix-bold text-white mb-6 leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-7xl font-netflix-bold text-white mb-4 md:mb-6 leading-tight">
                 {featuredMovie.title}
               </h1>
             )}
 
             {/* Description */}
             {featuredMovie?.overview && (
-              <p className="text-lg sm:text-xl text-white/90 mb-8 leading-relaxed max-w-2xl font-netflix-light">
-                {featuredMovie.overview.length > 200 
-                  ? `${featuredMovie.overview.substring(0, 200)}...` 
-                  : featuredMovie.overview
-                }
+              <p className="text-base sm:text-lg md:text-xl text-white/90 mb-6 md:mb-8 leading-relaxed max-w-2xl font-netflix-light">
+                <span className="block sm:hidden">
+                  {featuredMovie.overview.length > 120 
+                    ? `${featuredMovie.overview.substring(0, 120)}...` 
+                    : featuredMovie.overview
+                  }
+                </span>
+                <span className="hidden sm:block">
+                  {featuredMovie.overview.length > 200 
+                    ? `${featuredMovie.overview.substring(0, 200)}...` 
+                    : featuredMovie.overview
+                  }
+                </span>
               </p>
             )}
 

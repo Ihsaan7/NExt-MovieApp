@@ -197,17 +197,46 @@ const WatchPage = () => {
   return (
     <div className="min-h-screen bg-black text-white">
       {/* Video Player / Hero Section */}
-      <div className="relative w-full h-screen overflow-hidden">
+      <div className="relative w-full h-screen min-h-[600px] overflow-hidden">
         {/* Background Image */}
         <div className="absolute inset-0">
-          <Image
-            src={backdropUrl}
-            alt={title}
-            fill
-            className="object-cover object-center"
-            priority
-            quality={90}
-          />
+          {content.backdrop_path ? (
+            <>
+              {/* Mobile optimized image */}
+              <div className="block md:hidden">
+                <Image
+                  src={`https://image.tmdb.org/t/p/w780${content.backdrop_path}`}
+                  alt={title}
+                  fill
+                  className="object-cover object-top"
+                  priority
+                  quality={90}
+                  sizes="100vw"
+                />
+              </div>
+              {/* Desktop optimized image */}
+              <div className="hidden md:block">
+                <Image
+                  src={`https://image.tmdb.org/t/p/original${content.backdrop_path}`}
+                  alt={title}
+                  fill
+                  className="object-cover object-center"
+                  priority
+                  quality={85}
+                  sizes="100vw"
+                />
+              </div>
+            </>
+          ) : (
+            <Image
+              src="/wall11.png"
+              alt="Netflix background"
+              fill
+              className="object-cover object-center"
+              priority
+              sizes="100vw"
+            />
+          )}
           {!isPlaying && (
             <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
           )}
@@ -246,28 +275,28 @@ const WatchPage = () => {
 
           {/* Content Info (only when not playing) */}
           {!isPlaying && (
-            <div className="absolute bottom-0 left-0 right-0 p-6 md:p-12">
+            <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 md:p-12 pb-20 md:pb-12">
               <div className="max-w-2xl">
                 {/* Netflix Badge */}
                 <div className="flex items-center gap-2 mb-4">
                   <div className="w-6 h-6 bg-red-600 rounded flex items-center justify-center">
                     <span className="text-white text-xs font-bold">N</span>
                   </div>
-                  <span className="text-white font-semibold uppercase tracking-wide text-sm">
+                  <span className="text-white font-semibold uppercase tracking-wide text-xs sm:text-sm">
                     {content.type === 'movie' ? 'FILM' : 'SERIES'}
                   </span>
                 </div>
 
                 {/* Title */}
-                <h1 className="text-4xl sm:text-5xl lg:text-6xl font-netflix-bold text-white mb-4 leading-tight">
+                <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-netflix-bold text-white mb-4 leading-tight">
                   {title}
                 </h1>
 
                 {/* Metadata */}
-                <div className="flex items-center gap-4 mb-6 text-white/90">
+                <div className="flex items-center gap-2 sm:gap-4 mb-4 sm:mb-6 text-white/90 text-sm sm:text-base">
                   {content.vote_average && (
                     <div className="flex items-center gap-1">
-                      <svg className="w-5 h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
+                      <svg className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400" fill="currentColor" viewBox="0 0 20 20">
                         <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
                       </svg>
                       <span className="font-netflix">{content.vote_average.toFixed(1)}</span>
@@ -277,7 +306,7 @@ const WatchPage = () => {
                     <span className="font-netflix">{new Date(releaseDate).getFullYear()}</span>
                   )}
                   {content.runtime && (
-                    <span className="font-netflix">{Math.floor(content.runtime / 60)}h {content.runtime % 60}m</span>
+                    <span className="font-netflix hidden sm:inline">{Math.floor(content.runtime / 60)}h {content.runtime % 60}m</span>
                   )}
                   {content.number_of_seasons && (
                     <span className="font-netflix">{content.number_of_seasons} Season{content.number_of_seasons > 1 ? 's' : ''}</span>
@@ -286,11 +315,19 @@ const WatchPage = () => {
 
                 {/* Description */}
                 {content.overview && (
-                  <p className="text-lg text-white/90 mb-8 leading-relaxed max-w-2xl font-netflix-light">
-                    {content.overview.length > 300 
-                      ? `${content.overview.substring(0, 300)}...` 
-                      : content.overview
-                    }
+                  <p className="text-sm sm:text-base md:text-lg text-white/90 mb-6 sm:mb-8 leading-relaxed max-w-2xl font-netflix-light">
+                    <span className="block sm:hidden">
+                      {content.overview.length > 150 
+                        ? `${content.overview.substring(0, 150)}...` 
+                        : content.overview
+                      }
+                    </span>
+                    <span className="hidden sm:block">
+                      {content.overview.length > 300 
+                        ? `${content.overview.substring(0, 300)}...` 
+                        : content.overview
+                      }
+                    </span>
                   </p>
                 )}
 
