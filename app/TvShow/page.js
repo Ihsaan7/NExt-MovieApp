@@ -1,89 +1,133 @@
 'use client';
 import Link from "next/link";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Carousel from "../components/Carousel";
 import { supabase } from "../lib/supabase";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 export default function TVShows() {
   const [isOpen, setIsOpen] = useState(false);
   const [isOpenP, setIsOpenP] = useState(false);
-  const [series, setSeries] = useState([]);
-  const [kSeries, setKSeries] = useState([]);
+  const [popularSeries, setPopularSeries] = useState([]);
+  const [kDramas, setKDramas] = useState([]);
   const [trendingSeries, setTrendingSeries] = useState([]);
+  const [comedySeries, setComedySeries] = useState([]);
+  const [dramaSeries, setDramaSeries] = useState([]);
   const [featuredSeries, setFeaturedSeries] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const router = useRouter();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
 
-  const handleSearch = async (e) => {
+  const handleSearch = useCallback(async (e) => {
     e.preventDefault();
-    if (searchQuery.trim()) {
-      try {
-        const res = await fetch(`/api/search?query=${encodeURIComponent(searchQuery)}`);
-        if (!res.ok) throw new Error('Search API error');
-        const data = await res.json();
-        console.log("Search results:", data); // Debug
-        setSearchResults(data);
-        setIsSearchOpen(false);
-        setSearchQuery('');
-      } catch (error) {
-        console.error("Search error:", error);
-        setSearchResults([]);
-      }
+    if (!searchQuery.trim()) return;
+
+    try {
+      const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+      const res = await fetch(`https://api.themoviedb.org/3/search/tv?api_key=${apiKey}&query=${encodeURIComponent(searchQuery)}`);
+      if (!res.ok) throw new Error('Search failed');
+      const data = await res.json();
+      setSearchResults(data.results || []);
+      setIsSearchOpen(false);
+      setSearchQuery('');
+    } catch (error) {
+      console.error('Search error:', error);
+      setError('Failed to perform search. Please try again.');
     }
-  };
+  }, [searchQuery]);
+
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
+
+      const [popularResponse, kDramaResponse, trendingResponse, comedyResponse, dramaResponse] = await Promise.all([
+        fetch(`https://api.themoviedb.org/3/tv/popular?api_key=${apiKey}&language=en-US&page=1`),
+        fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&with_original_language=ko&with_genres=18&sort_by=popularity.desc&page=1`),
+        fetch(`https://api.themoviedb.org/3/trending/tv/day?api_key=${apiKey}&language=en-US`),
+        fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&with_genres=35&sort_by=popularity.desc&page=1`),
+        fetch(`https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&with_genres=18&sort_by=popularity.desc&page=1`)
+      ]);
+
+      if (!popularResponse.ok) throw new Error('Failed to fetch popular series');
+      if (!kDramaResponse.ok) throw new Error('Failed to fetch K-Dramas');
+      if (!trendingResponse.ok) throw new Error('Failed to fetch trending series');
+      if (!comedyResponse.ok) throw new Error('Failed to fetch comedy series');
+      if (!dramaResponse.ok) throw new Error('Failed to fetch drama series');
+
+      const [popularData, kDramaData, trendingData, comedyData, dramaData] = await Promise.all([
+        popularResponse.json(),
+        kDramaResponse.json(),
+        trendingResponse.json(),
+        comedyResponse.json(),
+        dramaResponse.json()
+      ]);
+
+      if (popularData.results?.length) {
+        setPopularSeries(popularData.results);
+        const validSeries = popularData.results.filter(series => series.backdrop_path);
+        setFeaturedSeries(validSeries[Math.floor(Math.random() * validSeries.length)] || popularData.results[0]);
+      }
+
+      setKDramas(kDramaData.results || []);
+      setTrendingSeries(trendingData.results || []);
+      setComedySeries(comedyData.results || []);
+      setDramaSeries(dramaData.results || []);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      setError('Failed to load content. Please try again later.');
+    } finally {
+      setLoading(false);
+    }
+  }, []);
 
   useEffect(() => {
-    // Check if user is authenticated
     const checkUser = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) router.push("/SignIn");
-    };
-    checkUser();
-
-    const fetchData = async () => {
       try {
-        const apiKey = process.env.NEXT_PUBLIC_TMDB_API_KEY;
-
-        // Fetch English series
-        const seriesResponse = await fetch(
-          `https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&with_original_language=en&sort_by=popularity.desc&page=1`
-        );
-        if (!seriesResponse.ok) throw new Error("Series fetch failed");
-        const seriesData = await seriesResponse.json();
-        setSeries(seriesData.results);
-        const validSeries = seriesData.results.filter(item => item.backdrop_path);
-        setFeaturedSeries(validSeries[Math.floor(Math.random() * validSeries.length)] || seriesData.results[0]);
-
-        // Fetch K-Series
-        const kSeriesResponse = await fetch(
-          `https://api.themoviedb.org/3/discover/tv?api_key=${apiKey}&with_original_language=ko&sort_by=popularity.desc&page=1`
-        );
-        if (!kSeriesResponse.ok) throw new Error(`K-Series fetch failed: ${kSeriesResponse.status}`);
-        const kSeriesData = await kSeriesResponse.json();
-        setKSeries(kSeriesData.results);
-
-        // Fetch trending series
-        const trendingSeriesResponse = await fetch(
-          `https://api.themoviedb.org/3/trending/tv/day?api_key=${apiKey}&language=en-US`
-        );
-        if (!trendingSeriesResponse.ok) throw new Error("Trending Series fetch failed");
-        const trendingSeriesData = await trendingSeriesResponse.json();
-        setTrendingSeries(trendingSeriesData.results);
-
-        setLoading(false);
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) router.push("/SignIn");
       } catch (error) {
-        console.error("Error fetching data:", error.message);
-        setLoading(false);
+        console.error('Auth error:', error);
+        router.push("/SignIn");
       }
     };
+    checkUser();
     fetchData();
-  }, [router]);
+  }, [router, fetchData]);
+
+  // Custom arrow components to fix React DOM warnings
+  const NextArrow = ({ onClick }) => (
+    <button
+      className="slick-arrow slick-next absolute top-1/2 -right-4 z-20 transform -translate-y-1/2 bg-black/80 hover:bg-black text-white rounded-full w-12 h-12 flex items-center justify-center transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white shadow-lg hover:scale-110"
+      onClick={onClick}
+      aria-label="Next slide"
+      style={{ display: 'flex !important' }}
+    >
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+      </svg>
+    </button>
+  );
+
+  const PrevArrow = ({ onClick }) => (
+    <button
+      className="slick-arrow slick-prev absolute top-1/2 -left-4 z-20 transform -translate-y-1/2 bg-black/80 hover:bg-black text-white rounded-full w-12 h-12 flex items-center justify-center transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-white shadow-lg hover:scale-110"
+      onClick={onClick}
+      aria-label="Previous slide"
+      style={{ display: 'flex !important' }}
+    >
+      <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+      </svg>
+    </button>
+  );
 
   const settings = {
     dots: false,
@@ -93,63 +137,112 @@ export default function TVShows() {
     slidesToScroll: 1,
     autoplay: false,
     arrows: true,
-    nextArrow: <div className="slick-arrow slick-next">→</div>,
-    prevArrow: <div className="slick-arrow slick-prev">←</div>,
+    nextArrow: <NextArrow />,
+    prevArrow: <PrevArrow />,
     responsive: [
       { breakpoint: 1024, settings: { slidesToShow: 3 } },
       { breakpoint: 768, settings: { slidesToShow: 2 } },
-      { breakpoint: 480, settings: { slidesToShow: 2 } }
+      { breakpoint: 480, settings: { slidesToShow: 1 } }
     ]
   };
 
   return (
-    <div className="w-full h-fit mb-25">
-      <div
-        className="moviePoster w-full h-80 bg-cover bg-center lg:h-100"
-        style={{
-          backgroundImage: featuredSeries
-            ? `url(https://image.tmdb.org/t/p/original${featuredSeries.backdrop_path})`
-            : "url('./wall11.png')"
-        }}
-      >
-        <div className="flex">
-          <img src="./N.png" className="absolute w-5 top-30 ml-4 lg:w-10 lg:top-45" alt="N Icon" />
-          <p className="absolute top-30 ml-10 font-bold lg:ml-15 lg:text-xl lg:top-47">Series</p>
-          {featuredSeries && (
-            <h1 className="absolute w-60 h-40 top-35 ml-4 text-white text-4xl font-bold md:w-70 lg:top-55 lg:text-5xl lg:w-100 lg:ml-15">
-              {featuredSeries.name}
-            </h1>
-          )}
-          <button className="absolute top-70 left-85 bg-white text-black p-1 px-2 rounded-lg font-bold md:left-170 md:hover:cursor-pointer lg:px-4 lg:p-2 lg:text-xl lg:top-85 lg:left-280">
-            ▶ Play
-          </button>
-          <p className="absolute top-70 text-white p-2 font-bold md:pl-5 md:text-lg lg:text-xl lg:top-90">Only on Netflix</p>
-        </div>
-        <nav className="flex justify-between items-center p-1">
-          <div className="flex flex-col justify-center items-center">
-            <img
-              src="../netflix2.svg"
-              className="w-25 h-20 md:h-30 md:scale-180 md:ml-20"
-              alt="Netflix Logo"
+    <div className="min-h-screen bg-black">
+      {/* Hero Section */}
+      <div className="relative w-full h-screen overflow-hidden">
+        {/* Background Image */}
+        <div className="absolute inset-0">
+          {featuredSeries?.backdrop_path ? (
+            <Image
+              src={`https://image.tmdb.org/t/p/original${featuredSeries.backdrop_path}`}
+              alt={featuredSeries.name || 'Featured TV show'}
+              fill
+              className="object-cover object-center"
+              priority
+              quality={85}
             />
-            <div className="absolute top-6 left-25 text-left md:top-10 md:left-60">
+          ) : (
+            <Image
+              src="/wall11.png"
+              alt="Netflix background"
+              fill
+              className="object-cover object-center"
+              priority
+            />
+          )}
+          {/* Gradient Overlays */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black via-black/50 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-transparent to-transparent" />
+        </div>
+
+        {/* Navigation */}
+        <nav className="relative z-20 flex justify-between items-center px-4 sm:px-6 lg:px-8 py-6">
+          <div className="flex items-center gap-8">
+            <Link href="/Homepage">
+              <Image
+                src="/netflix2.svg"
+                alt="Netflix Logo"
+                width={148}
+                height={40}
+                className="h-10 w-auto sm:h-12 sm:w-auto"
+                priority
+              />
+            </Link>
+            
+            <div className="hidden md:flex items-center gap-8">
+              <Link href="/Homepage" className="text-white hover:text-gray-300 transition-colors duration-200 font-netflix text-sm">
+                Home
+              </Link>
+              <Link href="/TvShow" className="text-white hover:text-gray-300 transition-colors duration-200 font-netflix text-sm border-b-2 border-white">
+                TV Shows
+              </Link>
+              <Link href="/Mylist" className="text-white hover:text-gray-300 transition-colors duration-200 font-netflix text-sm">
+                My List
+              </Link>
+            </div>
+
+            {/* Mobile Browse Menu */}
+            <div className="md:hidden relative">
               <button
                 onClick={() => setIsOpen(!isOpen)}
-                className="flex px-2 py-2 text-sm font-bold text-white rounded-md md:hover:cursor-pointer md:text-xl"
+                className="flex items-center gap-1 text-white hover:text-gray-300 transition-colors duration-200"
+                aria-expanded={isOpen}
+                aria-controls="browse-menu"
               >
                 Browse
-                <img className="w-6 h-6" src="./ddarrow.png" alt="Dropdown Arrow" />
+                <svg className={`w-4 h-4 transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </button>
               {isOpen && (
-                <div className="absolute right-0 left-1 font-bold w-48 bg-black text-white border-t-3 border-gray-200 divide-y divide-gray-100 shadow-2xl ring-1 ring-black ring-opacity-5">
-                  <div className="py-1">
-                    <Link href="/Homepage" className="block px-4 py-2 text-sm md:hover:bg-gray-100 md:hover:text-black">
-                      Movies
+                <div 
+                  id="browse-menu"
+                  className="absolute top-full left-0 mt-2 w-48 bg-black/95 backdrop-blur-sm text-white rounded-md shadow-2xl border border-gray-700"
+                  role="menu"
+                >
+                  <div className="py-2">
+                    <Link 
+                      href="/Homepage" 
+                      className="block px-4 py-2 text-sm hover:bg-gray-800 transition-colors duration-200"
+                      role="menuitem"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      Home
                     </Link>
-                    <Link href="/TvShow" className="block px-4 py-2 text-sm md:hover:bg-gray-100 md:hover:text-black">
-                      Tv-Series
+                    <Link 
+                      href="/TvShow" 
+                      className="block px-4 py-2 text-sm hover:bg-gray-800 transition-colors duration-200"
+                      role="menuitem"
+                      onClick={() => setIsOpen(false)}
+                    >
+                      TV Shows
                     </Link>
-                    <Link href="/my-list" className="block px-4 py-2 text-sm md:hover:bg-gray-100 md:hover:text-black">
+                    <Link 
+                      href="/Mylist" 
+                      className="block px-4 py-2 text-sm hover:bg-gray-800 transition-colors duration-200"
+                      role="menuitem"
+                      onClick={() => setIsOpen(false)}
+                    >
                       My List
                     </Link>
                   </div>
@@ -157,48 +250,95 @@ export default function TVShows() {
               )}
             </div>
           </div>
-          <div className="flex gap-4 text-white items-center relative">
+
+          <div className="flex items-center gap-4">
+            {/* Search */}
             <div className="relative">
-              <img
-                className="w-8 h-8 md:w-10 md:h-10 cursor-pointer"
-                src="./search.png"
-                alt="Search"
+              <button
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
-              />
+                className="p-2 hover:bg-white/10 rounded-full transition-colors duration-200"
+                aria-label="Search"
+                aria-expanded={isSearchOpen}
+              >
+                <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+              </button>
               {isSearchOpen && (
                 <form
                   onSubmit={handleSearch}
-                  className="absolute top-12 left-0 w-32 bg-black text-white border-t-3 border-gray-200 shadow-2xl ring-1 ring-black ring-opacity-5"
+                  className="absolute top-full right-0 mt-2 w-64 bg-black/95 backdrop-blur-sm border border-gray-700 rounded-md shadow-2xl overflow-hidden"
+                  role="search"
                 >
                   <input
                     type="text"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    placeholder="Search here.."
-                    className="w-full px-4 py-2 text-sm text-white bg-black border-b border-gray-200 focus:outline-none"
+                    placeholder="Search TV shows..."
+                    className="w-full px-4 py-3 text-sm text-white bg-transparent focus:outline-none focus:ring-2 focus:ring-red-500"
                     autoFocus
+                    aria-label="Search TV shows"
                   />
                 </form>
               )}
             </div>
-            <img className="w-8 h-8 md:w-10 md:h-10" src="./notifi.png" alt="Notifications" />
+
+            {/* Notifications */}
+            <button 
+              className="p-2 hover:bg-white/10 rounded-full transition-colors duration-200"
+              aria-label="Notifications"
+            >
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+              </svg>
+            </button>
+
+            {/* Profile Menu */}
             <div className="relative">
               <button
                 onClick={() => setIsOpenP(!isOpenP)}
-                className="flex text-sm font-bold text-white rounded-md md:hover:cursor-pointer"
+                className="flex items-center gap-2 p-1 hover:bg-white/10 rounded transition-colors duration-200"
+                aria-expanded={isOpenP}
+                aria-controls="profile-menu"
               >
-                <img className="w-8 h-8 md:w-10 md:h-10" src="./profile.png" alt="Profile" />
+                <div className="w-8 h-8 bg-red-600 rounded flex items-center justify-center">
+                  <span className="text-white text-sm font-semibold">U</span>
+                </div>
+                <svg className={`w-4 h-4 text-white transition-transform duration-200 ${isOpenP ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                </svg>
               </button>
               {isOpenP && (
-                <div className="absolute right-0 font-bold w-48 bg-black text-white border-t-3 border-gray-200 divide-y divide-gray-100 shadow-2xl ring-1 ring-black ring-opacity-5">
-                  <div className="py-1">
-                    <Link href="/Account" className="block px-4 py-2 text-sm text-white hover:bg-gray-100 hover:text-black">
+                <div 
+                  id="profile-menu"
+                  className="absolute top-full right-0 mt-2 w-48 bg-black/95 backdrop-blur-sm text-white rounded-md shadow-2xl border border-gray-700"
+                  role="menu"
+                >
+                  <div className="py-2">
+                    <Link 
+                      href="/Account" 
+                      className="block px-4 py-2 text-sm hover:bg-gray-800 transition-colors duration-200"
+                      role="menuitem"
+                      onClick={() => setIsOpenP(false)}
+                    >
                       Manage Account
                     </Link>
-                    <Link href="/SignIn" className="block px-4 py-2 text-sm text-white hover:bg-gray-100 hover:text-black">
+                    <button
+                      onClick={async () => {
+                        await supabase.auth.signOut();
+                        router.push("/SignIn");
+                      }}
+                      className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-800 transition-colors duration-200"
+                      role="menuitem"
+                    >
                       Sign Out
-                    </Link>
-                    <Link href="#" className="block px-4 py-2 text-sm text-white hover:bg-gray-100 hover:text-black">
+                    </button>
+                    <Link 
+                      href="#" 
+                      className="block px-4 py-2 text-sm hover:bg-gray-800 transition-colors duration-200"
+                      role="menuitem"
+                      onClick={() => setIsOpenP(false)}
+                    >
                       Help Center
                     </Link>
                   </div>
@@ -207,36 +347,114 @@ export default function TVShows() {
             </div>
           </div>
         </nav>
-      </div>
-      {searchResults.length > 0 ? (
-        <div className="carousel-container">
-          <div className="flex justify-between items-center">
-            <h3 className="text-white font-bold pl-2 mt-4">Search Results</h3>
-            <button
-              onClick={() => setSearchResults([])}
-              className="text-white pr-2 text-sm"
-            >
-              Clear
-            </button>
+
+        {/* Hero Content */}
+        <div className="relative z-10 flex items-center min-h-[calc(100vh-80px)] px-4 sm:px-6 lg:px-8">
+          <div className="max-w-2xl">
+            {/* Netflix Badge */}
+            <div className="flex items-center gap-2 mb-4">
+              <div className="w-6 h-6 bg-red-600 rounded flex items-center justify-center">
+                <span className="text-white text-xs font-bold">N</span>
+              </div>
+              <span className="text-white font-semibold">SERIES</span>
+            </div>
+
+            {/* Title */}
+            {featuredSeries && (
+              <h1 className="text-4xl sm:text-5xl lg:text-7xl font-netflix-bold text-white mb-6 leading-tight">
+                {featuredSeries.name}
+              </h1>
+            )}
+
+            {/* Description */}
+            {featuredSeries?.overview && (
+              <p className="text-lg sm:text-xl text-white/90 mb-8 leading-relaxed max-w-2xl font-netflix-light">
+                {featuredSeries.overview.length > 200 
+                  ? `${featuredSeries.overview.substring(0, 200)}...` 
+                  : featuredSeries.overview
+                }
+              </p>
+            )}
+
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row gap-4">
+              <button className="flex items-center justify-center gap-2 bg-white text-black px-8 py-3 rounded-md font-semibold hover:bg-gray-200 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black">
+                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM9.555 7.168A1 1 0 008 8v4a1 1 0 001.555.832l3-2a1 1 0 000-1.664l-3-2z" clipRule="evenodd" />
+                </svg>
+                Play
+              </button>
+              <button className="flex items-center justify-center gap-2 bg-gray-600/70 text-white px-8 py-3 rounded-md font-semibold hover:bg-gray-600/90 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-black">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                More Info
+              </button>
+            </div>
+
+            {/* Only on Netflix Badge */}
+            <div className="mt-8">
+              <span className="text-white/80 text-sm font-medium">Only on Netflix</span>
+            </div>
           </div>
-          <Carousel items={searchResults} loading={false} settings={settings} />
         </div>
-      ) : (
-        <>
-          <div className="carousel-container">
-            <h3 className="text-white font-bold pl-2 mt-4">Series</h3>
-            <Carousel items={series} loading={loading} settings={settings} />
+      </div>
+
+      {/* Content Sections */}
+      <div className="relative z-10 bg-black pb-20">
+        {error && (
+          <div className="mx-4 sm:mx-6 lg:mx-8 mb-8">
+            <div 
+              className="p-4 bg-red-900/20 border border-red-500/30 rounded-lg text-red-400 text-center"
+              role="alert"
+            >
+              {error}
+            </div>
           </div>
-          <div className="carousel-container">
-            <h3 className="text-white font-bold pl-2 mt-4">K-Series</h3>
-            <Carousel items={kSeries} loading={loading} settings={settings} />
+        )}
+
+        {searchResults.length > 0 ? (
+          <div className="mb-12">
+            <div className="flex justify-between items-center px-4 sm:px-6 lg:px-8 mb-4">
+              <h2 className="text-white text-xl sm:text-2xl font-netflix-bold">Search Results</h2>
+              <button
+                onClick={() => setSearchResults([])}
+                className="text-white/70 hover:text-white text-sm hover:underline focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-black rounded transition-colors duration-200"
+              >
+                Clear Results
+              </button>
+            </div>
+            <Carousel items={searchResults} loading={false} settings={settings} />
           </div>
-          <div className="carousel-container">
-            <h3 className="text-white font-bold pl-2 mt-4">Trending Series</h3>
-            <Carousel items={trendingSeries} loading={loading} settings={settings} />
-          </div>
-        </>
-      )}
+        ) : (
+          <>
+            <div className="mb-12">
+              <h2 className="text-white text-xl sm:text-2xl font-netflix-bold px-4 sm:px-6 lg:px-8 mb-6">Popular TV Shows</h2>
+              <Carousel items={popularSeries} loading={loading} settings={settings} />
+            </div>
+            
+            <div className="mb-12">
+              <h2 className="text-white text-xl sm:text-2xl font-netflix-bold px-4 sm:px-6 lg:px-8 mb-6">K-Dramas</h2>
+              <Carousel items={kDramas} loading={loading} settings={settings} />
+            </div>
+            
+            <div className="mb-12">
+              <h2 className="text-white text-xl sm:text-2xl font-netflix-bold px-4 sm:px-6 lg:px-8 mb-6">Trending Series</h2>
+              <Carousel items={trendingSeries} loading={loading} settings={settings} />
+            </div>
+
+            <div className="mb-12">
+              <h2 className="text-white text-xl sm:text-2xl font-netflix-bold px-4 sm:px-6 lg:px-8 mb-6">Comedy Series</h2>
+              <Carousel items={comedySeries} loading={loading} settings={settings} />
+            </div>
+
+            <div className="mb-12">
+              <h2 className="text-white text-xl sm:text-2xl font-netflix-bold px-4 sm:px-6 lg:px-8 mb-6">Drama Series</h2>
+              <Carousel items={dramaSeries} loading={loading} settings={settings} />
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 }
