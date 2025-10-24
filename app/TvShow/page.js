@@ -19,6 +19,7 @@ export default function TVShows() {
   const [featuredSeries, setFeaturedSeries] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [user, setUser] = useState(null);
   const router = useRouter();
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -97,7 +98,11 @@ export default function TVShows() {
     const checkUser = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        if (!user) router.push("/SignIn");
+        if (!user) {
+          router.push("/SignIn");
+        } else {
+          setUser(user);
+        }
       } catch (error) {
         console.error('Auth error:', error);
         router.push("/SignIn");
@@ -333,7 +338,9 @@ export default function TVShows() {
                 aria-controls="profile-menu"
               >
                 <div className="w-8 h-8 bg-red-600 rounded flex items-center justify-center">
-                  <span className="text-white text-sm font-semibold">U</span>
+                  <span className="text-white text-sm font-semibold">
+                    {user?.email?.charAt(0).toUpperCase() || 'U'}
+                  </span>
                 </div>
                 <svg className={`w-4 h-4 text-white transition-transform duration-200 ${isOpenP ? 'rotate-180' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
