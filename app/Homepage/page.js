@@ -1,6 +1,6 @@
 'use client';
 import Link from "next/link";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Carousel from "../components/Carousel";
@@ -21,6 +21,11 @@ export default function Homepage() {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [searchResults, setSearchResults] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Refs for click outside detection
+  const browseMenuRef = useRef(null);
+  const profileMenuRef = useRef(null);
+  const searchRef = useRef(null);
 
   const handleSearch = useCallback(async (e) => {
     e.preventDefault();
@@ -90,6 +95,32 @@ export default function Homepage() {
     checkUser();
     fetchData();
   }, [router, fetchData]);
+
+  // Click outside handler
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      // Close browse menu if clicking outside
+      if (browseMenuRef.current && !browseMenuRef.current.contains(event.target)) {
+        setIsOpen(false);
+      }
+      // Close profile menu if clicking outside
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setIsOpenP(false);
+      }
+      // Close search if clicking outside
+      if (searchRef.current && !searchRef.current.contains(event.target)) {
+        setIsSearchOpen(false);
+      }
+    };
+
+    // Add event listener
+    document.addEventListener('mousedown', handleClickOutside);
+    
+    // Cleanup
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   // Custom arrow components to fix React DOM warnings
   const NextArrow = ({ onClick }) => (
@@ -191,7 +222,7 @@ export default function Homepage() {
             </div>
 
             {/* Mobile Browse Menu */}
-            <div className="md:hidden relative">
+            <div className="md:hidden relative" ref={browseMenuRef}>
               <button
                 onClick={() => setIsOpen(!isOpen)}
                 className="flex items-center gap-1 text-white hover:text-gray-300 transition-colors duration-200"
@@ -206,7 +237,7 @@ export default function Homepage() {
               {isOpen && (
                 <div 
                   id="browse-menu"
-                  className="absolute top-full left-0 mt-2 w-48 bg-black/95 backdrop-blur-sm text-white rounded-md shadow-2xl border border-gray-700"
+                  className="absolute top-full left-0 mt-2 w-48 bg-black/95 backdrop-blur-sm text-white rounded-md shadow-2xl border border-gray-700 z-50"
                   role="menu"
                 >
                   <div className="py-2">
@@ -242,7 +273,7 @@ export default function Homepage() {
 
           <div className="flex items-center gap-4">
             {/* Search */}
-            <div className="relative">
+            <div className="relative" ref={searchRef}>
               <button
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
                 className="p-2 hover:bg-white/10 rounded-full transition-colors duration-200"
@@ -256,7 +287,7 @@ export default function Homepage() {
               {isSearchOpen && (
                 <form
                   onSubmit={handleSearch}
-                  className="absolute top-full right-0 mt-2 w-64 bg-black/95 backdrop-blur-sm border border-gray-700 rounded-md shadow-2xl overflow-hidden"
+                  className="absolute top-full right-0 mt-2 w-64 bg-black/95 backdrop-blur-sm border border-gray-700 rounded-md shadow-2xl overflow-hidden z-50"
                   role="search"
                 >
                   <input
@@ -283,7 +314,7 @@ export default function Homepage() {
             </button>
 
             {/* Profile Menu */}
-            <div className="relative">
+            <div className="relative" ref={profileMenuRef}>
               <button
                 onClick={() => setIsOpenP(!isOpenP)}
                 className="flex items-center gap-2 p-1 hover:bg-white/10 rounded transition-colors duration-200"
@@ -300,7 +331,7 @@ export default function Homepage() {
               {isOpenP && (
                 <div 
                   id="profile-menu"
-                  className="absolute top-full right-0 mt-2 w-48 bg-black/95 backdrop-blur-sm text-white rounded-md shadow-2xl border border-gray-700"
+                  className="absolute top-full right-0 mt-2 w-48 bg-black/95 backdrop-blur-sm text-white rounded-md shadow-2xl border border-gray-700 z-50"
                   role="menu"
                 >
                   <div className="py-2">
