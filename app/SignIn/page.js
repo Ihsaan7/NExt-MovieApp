@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from "react";
-import { supabase } from "../lib/supabase";
+import { auth } from "../lib/auth";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
@@ -47,9 +47,7 @@ export default function SignIn() {
     setIsLoading(true);
 
     try {
-
-      
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+      const { data, error: signInError } = await auth.signInWithPassword({
         email: email.trim().toLowerCase(),
         password
       });
@@ -58,26 +56,11 @@ export default function SignIn() {
 
       if (signInError) {
         console.error("Sign in error details:", signInError);
-        
-        if (signInError.message.includes("Invalid login credentials")) {
-          // This could mean either the account doesn't exist OR it exists but isn't confirmed
-          setError({
-            message: "Invalid email or password. If you recently signed up, please check your email for a confirmation link.",
-            type: "credentials",
-            email: email.trim().toLowerCase()
-          });
-        } else if (signInError.message.includes("Email not confirmed")) {
-          setError({
-            message: "Please check your email and click the confirmation link before signing in.",
-            type: "unconfirmed",
-            email: email.trim().toLowerCase()
-          });
-        } else {
-          setError({
-            message: `Authentication error: ${signInError.message}`,
-            type: "error"
-          });
-        }
+        setError({
+          message: signInError.message || "Invalid email or password.",
+          type: "credentials",
+          email: email.trim().toLowerCase()
+        });
         return;
       }
 
@@ -220,42 +203,30 @@ export default function SignIn() {
 
             {/* Error Display */}
             {error && (
-              <div className="mt-4 p-3 bg-orange-50/10 border-l-4 border-orange-400 rounded-r-md" role="alert">
+              <div className="mt-4 p-3 bg-red-900/40 border-l-4 border-red-500 rounded-r-md text-left" role="alert">
                 <div className="flex items-start">
-                  <svg className="w-5 h-5 text-orange-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                  <svg className="w-5 h-5 text-red-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                     <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
                   </svg>
                   <div className="ml-3 flex-1">
-                    <p className="text-sm text-orange-200 font-medium">
+                    <p className="text-sm text-red-200 font-medium">
                       {typeof error === 'string' ? error : error.message}
                     </p>
-                    {error.type === 'credentials' && error.email && (
-                      <div className="mt-3">
-                        <p className="text-sm text-orange-300 mb-2">
-                          Please check your email and confirm your account.
-                        </p>
-                        <button
-                          type="button"
-                          onClick={() => window.location.reload()}
-                          className="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-black"
-                          disabled={isLoading}
-                        >
-                          Try Again
-                        </button>
-                      </div>
-                    )}
-                    {error.type === 'unconfirmed' && error.email && (
-                      <div className="mt-3">
-                        <button
-                          type="button"
-                          onClick={() => window.location.reload()}
-                          className="inline-flex items-center px-3 py-1 bg-blue-600 text-white text-sm font-medium rounded hover:bg-blue-700 transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-black"
-                          disabled={isLoading}
-                        >
-                          Try Again
-                        </button>
-                      </div>
-                    )}
+                    <div className="mt-3 flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={() => setError(null)}
+                        className="inline-flex items-center px-3 py-1 bg-red-600 text-white text-xs font-medium rounded hover:bg-red-700 transition-colors duration-200 focus:outline-none"
+                      >
+                        Dismiss
+                      </button>
+                      <Link
+                        href="/SignUp/1"
+                        className="text-xs text-gray-300 hover:text-white underline"
+                      >
+                        Need an account? Sign up
+                      </Link>
+                    </div>
                   </div>
                 </div>
               </div>

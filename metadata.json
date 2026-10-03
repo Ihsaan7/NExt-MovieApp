@@ -1,0 +1,8 @@
+{
+  "name": "Netflix Clone",
+  "description": "Stream movies and TV shows online with user authentication powered by MongoDB.",
+  "permissions": [],
+  "capabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

@@ -2,7 +2,7 @@
 import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { supabase } from '../lib/supabase'
+import { auth } from '../lib/auth'
 import { useRouter } from 'next/navigation'
 
 const Page = () => {
@@ -17,7 +17,7 @@ const Page = () => {
   useEffect(() => {
     const getUser = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser()
+        const { data: { user } } = await auth.getUser()
         if (!user) {
           router.push('/SignIn')
           return
@@ -52,7 +52,7 @@ const Page = () => {
 
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut()
+      await auth.signOut()
       router.push('/SignIn')
     } catch (error) {
       console.error('Error signing out:', error)

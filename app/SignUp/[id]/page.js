@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { supabase } from "../../lib/supabase";
+import { auth } from "../../lib/auth";
 import Image from "next/image";
 
 const PlanCard = ({ plan, selected, onSelect, features }) => {
@@ -351,19 +351,19 @@ const StepPage = () => {
       setIsLoading(true);
 
       try {
-        const { error: signUpError } = await supabase.auth.signUp({
+        const { error: signUpError } = await auth.signUp({
           email,
           password,
           options: { 
-            emailRedirectTo: `${window.location.origin}/Homepage`,
             data: {
-              marketing_opt_out: marketingOptOut
+              marketing_opt_out: marketingOptOut,
+              plan: select || 'Premium',
             }
           }
         });
 
         if (signUpError) {
-          if (signUpError.message.includes("already registered")) {
+          if (signUpError.message && signUpError.message.includes("already registered")) {
             setError({
               message: "This email is already registered.",
               type: "existing_user"
@@ -374,12 +374,6 @@ const StepPage = () => {
           return;
         }
 
-        // Store user data
-        await supabase.from("users").insert([{ 
-          email,
-          marketing_opt_out: marketingOptOut 
-        }]);
-        
         localStorage.removeItem("signupEmail");
         router.push("/Homepage");
       } catch (err) {

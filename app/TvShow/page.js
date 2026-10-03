@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from "react";
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import Carousel from "../components/Carousel";
-import { supabase } from "../lib/supabase";
+import { auth } from "../lib/auth";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 
@@ -97,7 +97,7 @@ export default function TVShows() {
   useEffect(() => {
     const checkUser = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser();
+        const { data: { user } } = await auth.getUser();
         if (!user) {
           router.push("/SignIn");
         } else {
@@ -382,7 +382,7 @@ export default function TVShows() {
                     </Link>
                     <button
                       onClick={async () => {
-                        await supabase.auth.signOut();
+                        await auth.signOut();
                         router.push("/SignIn");
                       }}
                       className="block w-full text-left px-4 py-2 text-sm hover:bg-gray-800 transition-colors duration-200"

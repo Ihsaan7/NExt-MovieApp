@@ -3,7 +3,7 @@ import React, { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useParams, useRouter } from 'next/navigation'
-import { supabase } from '../../lib/supabase'
+import { auth } from '../../lib/auth'
 
 const WatchPage = () => {
   const [content, setContent] = useState(null)
@@ -21,7 +21,7 @@ const WatchPage = () => {
   useEffect(() => {
     const checkUser = async () => {
       try {
-        const { data: { user } } = await supabase.auth.getUser()
+        const { data: { user } } = await auth.getUser()
         if (!user) {
           router.push('/SignIn')
           return
