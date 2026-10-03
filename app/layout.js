@@ -18,17 +18,18 @@ const roboto = Roboto({
   fallback: ["Arial", "sans-serif"],
 });
 
+export const viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  themeColor: "#000000",
+};
+
 export const metadata = {
   title: "Netflix - Watch TV Shows Online, Watch Movies Online",
   description: "Watch Netflix movies & TV shows online or stream right to your smart TV, game console, PC, Mac, mobile, tablet and more. Latest update with mobile fixes.",
   keywords: ["Netflix", "streaming", "movies", "TV shows", "watch online"],
   authors: [{ name: "Netflix" }],
-  viewport: {
-    width: "device-width",
-    initialScale: 1,
-    maximumScale: 1,
-  },
-  themeColor: "#000000",
   manifest: "/manifest.json",
   icons: {
     icon: [
